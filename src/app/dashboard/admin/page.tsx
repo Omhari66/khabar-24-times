@@ -1,0 +1,68 @@
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+import UserTable from "./components/UserTable";
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminDashboardPage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user) {
+    redirect("/login");
+  }
+
+  const role = session.user.role;
+  if (role !== "ADMIN") {
+    // Defense-in-depth: Even if middleware fails, prevent access
+    redirect("/dashboard?error=forbidden");
+  }
+
+  // Fetch all users, excluding passwords
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      _count: {
+        select: { articles: true },
+      },
+    },
+    orderBy: {
+      email: "asc",
+    },
+  });
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 p-6 md:p-10 font-sans">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight">User Management</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">
+              Manage system access and assign roles to team members.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <a
+              href="/dashboard/admin/categories"
+              className="inline-flex items-center justify-center px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 rounded-xl font-medium text-sm transition-colors"
+            >
+              Manage Categories
+            </a>
+            <a
+              href="/dashboard/admin/users/new"
+              className="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium text-sm transition-colors shadow-md shadow-blue-500/10"
+            >
+              + Create New User
+            </a>
+          </div>
+        </div>
+
+        <UserTable initialUsers={users} currentUserId={session.user.id} />
+      </div>
+    </div>
+  );
+}
