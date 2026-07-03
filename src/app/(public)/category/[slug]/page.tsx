@@ -3,11 +3,14 @@ import { Layers } from "lucide-react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import ArticleCard from "../../components/ArticleCard";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export async function generateMetadata({
@@ -16,78 +19,120 @@ export async function generateMetadata({
   const { slug } = await params;
   const category = await prisma.category.findUnique({ where: { slug } });
 
-  if (!category) return { title: "Category not found" };
+  if (!category) return { title: "Category Not Found" };
 
   return {
-    title: `${category.name} section`,
-    description: `Published coverage from the ${category.name} desk on NewsPortal.`,
+    title: `${category.name} News`,
+    description: `Latest news and updates on ${category.name} from Bharat Sentinel.`,
   };
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
+export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
   const { slug } = await params;
+  const resolvedSearchParams = await searchParams;
   const category = await prisma.category.findUnique({ where: { slug } });
 
   if (!category) notFound();
 
-  const articles = await prisma.article.findMany({
-    where: {
-      categoryId: category.id,
-      status: "PUBLISHED",
-    },
-    orderBy: { publishedAt: "desc" },
-    take: 24,
-    include: {
-      author: { select: { name: true } },
-      category: { select: { name: true, slug: true } },
-    },
-  });
+  const currentPage = typeof resolvedSearchParams.page === "string" ? parseInt(resolvedSearchParams.page, 10) : 1;
+  const pageSize = 12;
+  const skip = (Math.max(currentPage, 1) - 1) * pageSize;
+
+  const [articles, totalArticles] = await Promise.all([
+    prisma.article.findMany({
+      where: {
+        categoryId: category.id,
+        status: "PUBLISHED",
+      },
+      orderBy: { publishedAt: "desc" },
+      skip,
+      take: pageSize,
+      include: {
+        author: { select: { name: true } },
+        category: { select: { name: true, slug: true } },
+      },
+    }),
+    prisma.article.count({
+      where: {
+        categoryId: category.id,
+        status: "PUBLISHED",
+      },
+    })
+  ]);
+
+  const totalPages = Math.ceil(totalArticles / pageSize);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <section className="glass-panel-strong rounded-[36px] border border-white/70 p-7 sm:p-10">
-        <p className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-500">
-          Section
-        </p>
-        <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">
-          {category.name}
-        </h1>
-        <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">
-          Category-led discovery for readers who want to follow a subject instead of chasing individual headlines.
-        </p>
-        <div className="mt-6 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">
-          {articles.length} published article{articles.length === 1 ? "" : "s"}
-        </div>
-      </section>
-
-      <section className="mt-10">
-        {articles.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {articles.map((article) => (
-              <ArticleCard
-                key={article.id}
-                title={article.title}
-                slug={article.slug}
-                category={article.category}
-                publishedAt={article.publishedAt}
-                coverImageUrl={article.coverImageUrl}
-                author={article.author}
-                content={article.content}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="glass-panel-strong flex flex-col items-center rounded-[34px] border border-white/70 px-6 py-20 text-center">
-            <div className="mb-5 flex h-18 w-18 items-center justify-center rounded-full bg-slate-950 text-white">
-              <Layers size={30} />
+    <div className="bg-background min-h-screen py-8">
+      <main className="max-w-[1280px] mx-auto px-4">
+        {/* Category Header */}
+        <div className="border-b-4 border-primary mb-8 pb-4 flex items-end justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-sans text-text-secondary uppercase font-medium mb-2">
+              <Link href="/" className="hover:text-primary transition">Home</Link>
+              <span>/</span>
+              <span className="font-bold text-text-primary">{category.name}</span>
             </div>
-            <h2 className="text-2xl font-black text-slate-950">No published stories yet</h2>
-            <p className="mt-3 max-w-md text-sm leading-7 text-slate-600">
-              This section exists, but no stories have been published to it yet.
-            </p>
+            <h1 className="text-4xl font-serif font-black text-text-primary uppercase tracking-tight">
+              {category.name}
+            </h1>
           </div>
-        )}
-      </section>
+          <div className="text-sm font-sans font-bold text-text-secondary bg-surface-muted px-4 py-2 border border-structural">
+            {totalArticles} Articles
+          </div>
+        </div>
+
+        {/* Article Grid */}
+        <section>
+          {articles.length > 0 ? (
+            <>
+              <div className="grid gap-x-8 gap-y-6 md:grid-cols-2 lg:grid-cols-3">
+                {articles.map((article) => (
+                  <ArticleCard
+                    key={article.id}
+                    title={article.title}
+                    slug={article.slug}
+                    category={article.category}
+                    publishedAt={article.publishedAt}
+                    coverImageUrl={article.coverImageUrl}
+                    author={article.author}
+                    content={article.content}
+                  />
+                ))}
+              </div>
+              
+              {/* Pagination UI */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-12 pt-8 border-t border-structural">
+                  {currentPage > 1 && (
+                    <Link href={`/category/${category.slug}?page=${currentPage - 1}`} className="px-4 py-2 border border-structural hover:bg-surface-muted transition font-condensed font-bold uppercase tracking-widest text-sm">
+                      Previous
+                    </Link>
+                  )}
+                  <span className="text-sm font-sans text-text-secondary px-4">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  {currentPage < totalPages && (
+                    <Link href={`/category/${category.slug}?page=${currentPage + 1}`} className="px-4 py-2 border border-structural hover:bg-surface-muted transition font-condensed font-bold uppercase tracking-widest text-sm">
+                      Next
+                    </Link>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="bg-surface-muted border border-structural flex flex-col items-center py-20 text-center">
+              <div className="mb-4 text-surface-border">
+                <Layers size={40} />
+              </div>
+              <h2 className="text-2xl font-serif font-bold text-text-primary mb-2">No Articles Yet</h2>
+              <p className="text-sm text-text-secondary font-sans max-w-md">
+                We haven&apos;t published any news in this category yet. Please check back later.
+              </p>
+            </div>
+          )}
+        </section>
+      </main>
     </div>
   );
 }

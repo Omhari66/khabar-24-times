@@ -1,0 +1,85 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Bharat Sentinel API",
+    "version": "1.0.0",
+    "description": "API documentation for the Bharat Sentinel News Portal backend."
+  },
+  "servers": [
+    {
+      "url": "https://www.bharatsentinel.in/api",
+      "description": "Production Server"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Returns the system status and latency metrics.",
+        "responses": {
+          "200": {
+            "description": "Healthy"
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "post": {
+        "summary": "Push Metrics",
+        "description": "Submit asynchronous analytics such as ad impressions or article views.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["ARTICLE_VIEW", "HOMEPAGE_SLOT_CLICK", "AD_IMPRESSION"]
+                  },
+                  "payload": {
+                    "type": "object"
+                  }
+                },
+                "required": ["type", "payload"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      }
+    },
+    "/subscribe": {
+      "post": {
+        "summary": "Subscribe to Notifications",
+        "description": "Subscribe a client to web push or newsletter updates.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["PUSH", "NEWSLETTER"]
+                  },
+                  "payload": {
+                    "type": "object"
+                  }
+                },
+                "required": ["type", "payload"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+export { CategoryRepository } from "@/lib/repositories/category-repository";
+export { AuditRepository } from "@/lib/repositories/audit-repository";
+export { PermissionRepository } from "@/lib/repositories/permission-repository";
+export { TagRepository } from "@/lib/repositories/tag-repository";
+export { LocationRepository } from "@/lib/repositories/location-repository";
+export { AuthorRepository } from "@/lib/repositories/author-repository";
+export { ReporterRepository } from "@/lib/repositories/reporter-repository";
+export { ArticleRepository } from "@/lib/repositories/article-repository";
+export { MediaRepository } from "@/lib/repositories/media-repository";
+export { GalleryRepository } from "@/lib/repositories/gallery-repository";
+export { AssignmentRepository } from "@/lib/repositories/assignment-repository";
+export { NotificationRepository } from "@/lib/repositories/notification-repository";
+export { CalendarRepository } from "@/lib/repositories/calendar-repository";

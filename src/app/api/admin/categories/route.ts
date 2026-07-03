@@ -1,85 +1,33 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { withApiHandler } from "@/lib/api/handler";
+import { apiSuccess } from "@/lib/api/response";
+import { parseJsonBody, requiredSlugString, requiredTrimmedString } from "@/lib/api/validation";
+import { CategoryRepository } from "@/lib/repositories";
+import { CategoryService } from "@/lib/services";
+import { requirePermission } from "@/lib/permissions/guard";
+
+const createCategorySchema = z.object({
+  name: requiredTrimmedString("Category name is required"),
+  slug: requiredSlugString("Category slug is required"),
+});
+
+const categoryService = new CategoryService(new CategoryRepository());
 
 // GET all categories (with article counts)
-export async function GET() {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 });
-    }
+export const GET = withApiHandler({ scope: "api/admin/categories:get" }, async () => {
+  await requirePermission("category.view");
 
-    const categories = await prisma.category.findMany({
-      include: {
-        _count: {
-          select: { articles: true },
-        },
-      },
-      orderBy: { name: "asc" },
-    });
+  const categories = await categoryService.listCategories();
 
-    return NextResponse.json(categories);
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
-}
+  return apiSuccess(categories);
+});
 
 // POST create a new category
-export async function POST(req: Request) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 });
-    }
+export const POST = withApiHandler({ scope: "api/admin/categories:create" }, async (req) => {
+  await requirePermission("category.create");
 
-    const body = await req.json();
-    const { name, slug } = body;
+  const { name, slug } = await parseJsonBody(req, createCategorySchema);
+  const category = await categoryService.createCategory({ name, slug });
 
-    if (!name || typeof name !== "string" || !name.trim()) {
-      return NextResponse.json(
-        { error: "Category name is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!slug || typeof slug !== "string" || !slug.trim()) {
-      return NextResponse.json(
-        { error: "Category slug is required" },
-        { status: 400 }
-      );
-    }
-
-    // Check for slug collision
-    const existing = await prisma.category.findUnique({
-      where: { slug: slug.trim() },
-    });
-
-    if (existing) {
-      return NextResponse.json(
-        { error: "A category with this slug already exists" },
-        { status: 409 }
-      );
-    }
-
-    const category = await prisma.category.create({
-      data: {
-        name: name.trim(),
-        slug: slug.trim(),
-      },
-    });
-
-    return NextResponse.json(category, { status: 201 });
-  } catch (error) {
-    console.error("Error creating category:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
-}
+  return apiSuccess(category, { status: 201 });
+});

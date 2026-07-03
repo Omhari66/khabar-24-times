@@ -1,102 +1,69 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { withApiHandler } from "@/lib/api/handler";
+import { apiSuccess } from "@/lib/api/response";
+import { parseJsonBody, requiredSlugString, requiredTrimmedString } from "@/lib/api/validation";
+import { ArticleRepository } from "@/lib/repositories/article-repository";
+import { ArticleService } from "@/lib/services/article-service";
+import { requireSession } from "@/lib/api/auth";
+import { requirePermission } from "@/lib/permissions/guard";
+import { Prisma } from "@prisma/client";
 
-export async function POST(req: Request) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+const createArticleSchema = z.object({
+  title: requiredTrimmedString("Title is required"),
+  slug: requiredSlugString("Slug is required"),
+  content: z.any(),
+  coverImageUrl: z.string().nullable().optional(),
+  categoryId: z.string().min(1, "Category ID is required"),
+  status: z.enum(["DRAFT", "PENDING"]).default("DRAFT"),
+});
 
-    const role = session.user.role;
-    if (role !== "REPORTER" && role !== "EDITOR" && role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+const articleService = new ArticleService(new ArticleRepository());
 
-    const body = await req.json();
-    const { title, slug, content, coverImageUrl, categoryId, status } = body;
-    const normalizedTitle = typeof title === "string" ? title.trim() : "";
-    const normalizedSlug = typeof slug === "string" ? slug.trim().toLowerCase() : "";
+export const GET = withApiHandler({ scope: "api/articles:get" }, async () => {
+  const session = await requireSession();
+  const role = session.user.role;
 
-    if (!normalizedTitle || !normalizedSlug || !content || !categoryId) {
-      return NextResponse.json(
-        { error: "Missing required fields: title, slug, content, categoryId" },
-        { status: 400 }
-      );
-    }
-
-    // Enforce status to DRAFT or PENDING only
-    const articleStatus = status === "PENDING" ? "PENDING" : "DRAFT";
-
-    const article = await prisma.article.create({
-      data: {
-        title: normalizedTitle,
-        slug: normalizedSlug,
-        content,
-        coverImageUrl,
-        status: articleStatus,
-        authorId: session.user.id,
-        categoryId,
-        rejectionNote: null,
-      },
-    });
-
-    return NextResponse.json(article, { status: 201 });
-  } catch (error) {
-    console.error("Error creating article:", error);
-    if (error && typeof error === "object" && "code" in error && error.code === "P2002") {
-      return NextResponse.json(
-        { error: "A similar article slug already exists, please try again" },
-        { status: 409 }
-      );
-    }
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+  // Ideally, reading the list of articles requires a permission like "article.manage" 
+  // or reporters should only see their own.
+  // We'll enforce that via code as per the existing logic.
+  let whereClause: Prisma.ArticleWhereInput = {};
+  
+  if (role === "REPORTER") {
+    whereClause = { authorId: session.user.id };
+  } else if (role !== "EDITOR" && role !== "ADMIN") {
+    // Fallback: If not reporter, editor or admin, they shouldn't be here.
+    await requirePermission("article.manage"); // Will throw Forbidden since they don't have it
   }
-}
 
-export async function GET() {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const articles = await articleService.listArticles(whereClause);
+  
+  // The service already sorts by default in the repository? No it doesn't. 
+  // The old route sorted by createdAt desc.
+  // We should sort it here, or modify the repository. 
+  // For now we sort in memory to match the old behavior without changing repository interface
+  articles.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-    const role = session.user.role;
-    if (role !== "REPORTER" && role !== "EDITOR" && role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  return apiSuccess(articles);
+});
 
-    // Reporters can only see their own articles
-    const whereClause = role === "REPORTER" ? { authorId: session.user.id } : {};
+export const POST = withApiHandler({ scope: "api/articles:create" }, async (req) => {
+  const session = await requireSession();
+  
+  // Check permission using the correct guard
+  await requirePermission("article.create");
 
-    const articles = await prisma.article.findMany({
-      where: whereClause,
-      include: {
-        category: true,
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+  const body = await parseJsonBody(req, createArticleSchema);
 
-    return NextResponse.json(articles);
-  } catch (error) {
-    console.error("Error fetching articles:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
-}
+  const article = await articleService.createArticle({
+    title: body.title,
+    slug: body.slug,
+    content: body.content,
+    coverImageUrl: body.coverImageUrl || null,
+    categoryId: body.categoryId,
+    status: body.status,
+    authorId: session.user.id,
+    rejectionNote: null,
+  });
+
+  return apiSuccess(article, { status: 201 });
+});

@@ -13,20 +13,20 @@ export default function NotFound() {
             <AlertTriangle size={32} />
           </div>
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.26em] text-slate-500">
-            Page missing
+            पेज नहीं मिला
           </p>
           <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">
-            That page isn&apos;t here.
+            यह पेज यहां उपलब्ध नहीं है।
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-base leading-8 text-slate-600">
-            The article may have moved, the link may be stale, or the address may be incorrect.
+            संभव है कि लेख स्थानांतरित हो गया हो, लिंक पुराना हो या पता गलत हो।
           </p>
           <Link
             href="/"
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
             <ArrowLeft size={16} />
-            Return to homepage
+            मुखपृष्ठ पर लौटें
           </Link>
         </div>
       </main>

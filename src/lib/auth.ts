@@ -2,6 +2,18 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
+import { parseInput, requiredTrimmedString } from "@/lib/api/validation";
+import { createLogger } from "@/lib/logger";
+import { AuditRepository } from "@/lib/repositories/audit-repository";
+import { AuditService } from "@/lib/services/audit-service";
+
+const logger = createLogger("auth");
+
+const credentialSchema = z.object({
+  email: requiredTrimmedString("Invalid credentials").transform((value) => value.toLowerCase()),
+  password: requiredTrimmedString("Invalid credentials"),
+});
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -15,13 +27,18 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        let parsedCredentials: z.infer<typeof credentialSchema>;
+
+        try {
+          parsedCredentials = parseInput(credentials, credentialSchema);
+        } catch (error) {
+          logger.warn("Credential validation failed", { error });
           throw new Error("Invalid credentials");
         }
 
         const user = await prisma.user.findUnique({
           where: {
-            email: credentials.email,
+            email: parsedCredentials.email,
           },
         });
 
@@ -30,7 +47,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         const isPasswordCorrect = await bcrypt.compare(
-          credentials.password,
+          parsedCredentials.password,
           user.password
         );
 
@@ -72,6 +89,21 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role;
       }
       return session;
+    },
+  },
+  events: {
+    async signIn({ user }) {
+      const auditRepository = new AuditRepository();
+      const auditService = new AuditService(auditRepository);
+      await auditService.log({
+        action: "USER_LOGIN",
+        entityType: "User",
+        entityId: user.id,
+        status: "SUCCESS",
+        userId: user.id,
+        userRole: user.role,
+        newValue: { email: user.email, name: user.name },
+      });
     },
   },
   pages: {

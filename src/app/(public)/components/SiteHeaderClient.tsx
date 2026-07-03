@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Newspaper, Search, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { useState } from "react";
 
 type Category = {
@@ -20,127 +20,111 @@ export default function SiteHeaderClient({
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/50 bg-[rgba(247,243,236,0.82)] backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-4 py-4">
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => setOpen((value) => !value)}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-950 lg:hidden"
-              aria-label="Toggle navigation"
-            >
-              {open ? <X size={18} /> : <Menu size={18} />}
-            </button>
-
-            <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-lg shadow-slate-900/10">
-                <Newspaper size={18} />
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
-                  Live Desk
-                </p>
-                <p className="text-xl font-black tracking-tight text-slate-950">
-                  NewsPortal
-                </p>
-              </div>
-            </Link>
+    <header className="sticky top-0 z-50 bg-white border-b border-structural shadow-sm font-sans">
+      {/* Super Top Bar - Date & Social */}
+      <div className="bg-secondary-dark text-secondary-light border-b border-secondary hidden md:block">
+        <div className="max-w-[1280px] mx-auto px-4 h-8 flex items-center justify-between text-[11px] font-condensed tracking-widest uppercase font-bold">
+          <div>
+            {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
-
-          <div className="hidden flex-1 items-center justify-center lg:flex">
-            <nav
-              aria-label="Primary"
-              className="glass-panel flex items-center gap-1 rounded-full border border-white/60 px-2 py-2"
-            >
-              <HeaderLink href="/" active={pathname === "/"}>
-                Home
-              </HeaderLink>
-              {categories.map((category) => (
-                <HeaderLink
-                  key={category.id}
-                  href={`/category/${category.slug}`}
-                  active={pathname === `/category/${category.slug}`}
-                >
-                  {category.name}
-                </HeaderLink>
-              ))}
-            </nav>
+          <div className="flex gap-4">
+            <Link href="#" className="hover:text-white transition">Facebook</Link>
+            <Link href="#" className="hover:text-white transition">Twitter</Link>
+            <Link href="#" className="hover:text-white transition">YouTube</Link>
           </div>
+        </div>
+      </div>
 
-          <div className="flex items-center gap-2">
-            <form
-              action="/search"
-              method="get"
-              role="search"
-              className="hidden items-center gap-2 rounded-full border border-white/60 bg-white/80 px-3 py-2 shadow-sm md:flex"
-            >
-              <Search size={15} className="text-slate-400" />
-              <input
-                type="search"
-                name="q"
-                placeholder="Search stories, beats, sections"
-                className="w-56 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
+      {/* Top Bar - Branding & Search */}
+      <div className="bg-primary text-white">
+        <div className="max-w-[1280px] mx-auto px-4 h-20 flex items-center justify-between">
+          <Link href="/" className="flex flex-col items-start leading-none group">
+            <span className="text-[10px] font-condensed font-bold tracking-widest text-primary-light uppercase mb-1">
+              The Daily Truth
+            </span>
+            <span className="text-4xl font-serif font-black tracking-tight group-hover:text-primary-light transition-colors">
+              Bharat Sentinel
+            </span>
+          </Link>
+          
+          <div className="hidden md:flex items-center gap-6">
+            <form action="/search" method="get" className="relative">
+              <input 
+                type="search" 
+                name="q" 
+                placeholder="Search news..." 
+                className="bg-primary-dark text-white placeholder-primary-light/70 px-4 py-2 rounded-sm border border-primary-dark focus:border-white focus:outline-none text-sm transition-colors w-64"
               />
+              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-light hover:text-white">
+                <Search size={16} />
+              </button>
             </form>
-            <Link
-              href="/login"
-              className="inline-flex items-center rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-            >
+            <Link href="/login" className="text-xs font-condensed font-bold uppercase tracking-widest border border-primary-light px-4 py-2 hover:bg-white hover:text-primary transition-colors">
               Staff Login
             </Link>
           </div>
-        </div>
 
-        <div className="flex items-center justify-between gap-3 border-t border-white/60 py-3 text-xs text-slate-500">
-          <div className="flex min-w-0 items-center gap-3 overflow-hidden">
-            <span className="rounded-full bg-emerald-100 px-2.5 py-1 font-semibold uppercase tracking-[0.2em] text-emerald-800">
-              New Format
-            </span>
-            <p className="truncate">
-              A cleaner newsroom surface for breaking coverage, longform reads, and internal publishing.
-            </p>
-          </div>
-          <Link href="/search" className="font-semibold text-slate-700 transition hover:text-slate-950 md:hidden">
-            Search
-          </Link>
+          <button
+            type="button"
+            onClick={() => setOpen((value) => !value)}
+            className="md:hidden text-white hover:text-primary-light transition-colors"
+          >
+            {open ? <X size={28} /> : <Menu size={28} />}
+          </button>
         </div>
+      </div>
 
-        {open && (
-          <div className="glass-panel mb-4 rounded-3xl border border-white/60 p-4 lg:hidden">
-            <div className="mb-4">
-              <form
-                action="/search"
-                method="get"
-                role="search"
-                className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2"
+      {/* Main Navigation (Desktop) */}
+      <div className="hidden md:block bg-secondary text-white">
+        <div className="max-w-[1280px] mx-auto px-4 h-12 flex items-center justify-between">
+          <nav className="flex items-center h-full space-x-1 overflow-x-auto scrollbar-hide">
+            <HeaderLink href="/" active={pathname === "/"}>HOME</HeaderLink>
+            {categories.map((category) => (
+              <HeaderLink
+                key={category.id}
+                href={`/category/${category.slug}`}
+                active={pathname === `/category/${category.slug}`}
               >
-                <Search size={15} className="text-slate-400" />
-                <input
-                  type="search"
-                  name="q"
-                  placeholder="Search the newsroom"
-                  className="w-full bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
-                />
-              </form>
-            </div>
-            <nav className="grid grid-cols-2 gap-2">
-              <HeaderLink href="/" active={pathname === "/"}>
-                Home
+                {category.name.toUpperCase()}
               </HeaderLink>
+            ))}
+          </nav>
+        </div>
+      </div>
+
+      {/* Mobile Navigation Dropdown */}
+      {open && (
+        <div className="md:hidden bg-secondary text-white border-t border-secondary-dark">
+          <div className="p-4 space-y-4">
+            <form action="/search" method="get" className="relative">
+              <input 
+                type="search" 
+                name="q" 
+                placeholder="Search news..." 
+                className="w-full bg-secondary-dark text-white placeholder-secondary-light/70 px-4 py-2 border border-secondary-dark focus:border-white focus:outline-none text-sm"
+              />
+              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-light">
+                <Search size={18} />
+              </button>
+            </form>
+            <nav className="grid grid-cols-2 gap-2">
+              <HeaderLink href="/" active={pathname === "/"}>HOME</HeaderLink>
               {categories.map((category) => (
                 <HeaderLink
                   key={category.id}
                   href={`/category/${category.slug}`}
                   active={pathname === `/category/${category.slug}`}
                 >
-                  {category.name}
+                  {category.name.toUpperCase()}
                 </HeaderLink>
               ))}
+              <Link href="/login" className="px-3 py-2 text-sm font-condensed font-bold uppercase tracking-widest text-secondary-light hover:text-white">
+                STAFF LOGIN
+              </Link>
             </nav>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   );
 }
@@ -157,10 +141,10 @@ function HeaderLink({
   return (
     <Link
       href={href}
-      className={`rounded-full px-3.5 py-2 text-sm font-medium transition ${
+      className={`h-full flex items-center px-4 text-xs font-condensed font-bold tracking-widest uppercase transition-colors whitespace-nowrap ${
         active
-          ? "bg-slate-950 text-white"
-          : "text-slate-600 hover:bg-white hover:text-slate-950"
+          ? "bg-secondary-dark text-white"
+          : "text-secondary-light hover:bg-secondary-dark hover:text-white"
       }`}
     >
       {children}

@@ -1,56 +1,18 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { withApiHandler } from "@/lib/api/handler";
+import { apiSuccess } from "@/lib/api/response";
+import { ArticleRepository } from "@/lib/repositories/article-repository";
+import { ArticleService } from "@/lib/services/article-service";
+import { requirePermission } from "@/lib/permissions/guard";
 
-export async function POST(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+const articleService = new ArticleService(new ArticleRepository());
 
-    const role = session.user.role;
-    if (role !== "EDITOR" && role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Forbidden: Only editors and admins can publish articles" },
-        { status: 403 }
-      );
-    }
+export const POST = withApiHandler({ scope: "api/articles/[id]/publish" }, async (req, { params }: { params: { id: string } }) => {
+  await requirePermission("article.publish");
 
-    const article = await prisma.article.findUnique({
-      where: { id: params.id },
-    });
+  const updatedArticle = await articleService.updateArticle(params.id, {
+    status: "PUBLISHED",
+    publishedAt: new Date(),
+  });
 
-    if (!article) {
-      return NextResponse.json({ error: "Article not found" }, { status: 404 });
-    }
-
-    if (article.status !== "PENDING") {
-      return NextResponse.json(
-        { error: "Article is not pending review" },
-        { status: 409 }
-      );
-    }
-
-    const updated = await prisma.article.update({
-      where: { id: params.id },
-      data: {
-        status: "PUBLISHED",
-        publishedAt: new Date(),
-        rejectionNote: null,
-      },
-    });
-
-    return NextResponse.json(updated);
-  } catch (error) {
-    console.error("Error publishing article:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
-}
+  return apiSuccess(updatedArticle);
+});

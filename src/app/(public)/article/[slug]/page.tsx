@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Clock3, Tag, User } from "lucide-react";
+import { Clock3 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import ArticleCard from "../../components/ArticleCard";
@@ -9,6 +9,7 @@ import ReaderActions from "../../components/ReaderActions";
 import TiptapRenderer, { extractPlainText } from "../../components/TiptapRenderer";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -21,17 +22,18 @@ const ARTICLE_INCLUDE = {
 
 function formatDate(date: Date | null) {
   if (!date) return "";
-
-  return new Date(date).toLocaleDateString(undefined, {
-    weekday: "long",
+  return new Date(date).toLocaleDateString("en-IN", {
+    weekday: "short",
     month: "long",
     day: "numeric",
     year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
   });
 }
 
 function readingTime(content: unknown) {
-  const words = extractPlainText(content, 10_000).split(/\s+/).filter(Boolean).length;
+  const words = extractPlainText(content, 10000).split(/\s+/).filter(Boolean).length;
   return `${Math.max(1, Math.ceil(words / 220))} min read`;
 }
 
@@ -44,12 +46,9 @@ export async function generateMetadata({
     include: ARTICLE_INCLUDE,
   });
 
-  if (!article) {
-    return { title: "Article not found" };
-  }
+  if (!article) return { title: "Article Not Found" };
 
   const description = extractPlainText(article.content, 160);
-
   return {
     title: article.title,
     description,
@@ -63,7 +62,6 @@ export async function generateMetadata({
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-
   const article = await prisma.article.findFirst({
     where: { slug, status: "PUBLISHED" },
     include: ARTICLE_INCLUDE,
@@ -78,113 +76,155 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       NOT: { id: article.id },
     },
     orderBy: { publishedAt: "desc" },
-    take: 3,
+    take: 4,
     include: {
       author: { select: { name: true } },
       category: { select: { name: true, slug: true } },
     },
   });
 
-  return (
-    <div className="pb-12">
-      <section className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8 lg:pt-12">
-        <div className="mb-6">
-          <Link
-            href={`/category/${article.category.slug}`}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
-          >
-            <ArrowLeft size={15} />
-            Back to {article.category.name}
-          </Link>
-        </div>
+  // Fetch some "trending" articles for sidebar
+  const trendingArticles = await prisma.article.findMany({
+    where: { status: "PUBLISHED", NOT: { id: article.id } },
+    orderBy: { publishedAt: "desc" },
+    take: 5,
+    include: {
+      author: { select: { name: true } },
+      category: { select: { name: true, slug: true } },
+    }
+  });
 
-        <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:items-end">
-          <div className="space-y-5">
-            <div className="flex flex-wrap items-center gap-3 text-sm">
-              <Link
-                href={`/category/${article.category.slug}`}
-                className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1.5 font-semibold text-emerald-900 transition hover:bg-emerald-200"
-              >
-                <Tag size={13} />
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": article.title,
+    "image": article.coverImageUrl ? [article.coverImageUrl] : [],
+    "datePublished": article.publishedAt ? new Date(article.publishedAt).toISOString() : new Date(article.createdAt).toISOString(),
+    "dateModified": new Date(article.updatedAt).toISOString(),
+    "author": [{
+      "@type": "Person",
+      "name": article.author.name ?? "Bharat Sentinel Desk"
+    }]
+  };
+
+  return (
+    <div className="bg-background min-h-screen py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <main className="max-w-[1280px] mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* Main Article Content (8 columns) */}
+        <article className="lg:col-span-8 border border-structural bg-white">
+          <div className="p-6 md:p-8 border-b border-structural">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-xs font-sans text-text-secondary uppercase font-medium mb-4">
+              <Link href="/" className="hover:text-primary transition">Home</Link>
+              <span>/</span>
+              <Link href={`/category/${article.category.slug}`} className="hover:text-primary transition font-bold text-primary">
                 {article.category.name}
               </Link>
-              <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-600">
-                {readingTime(article.content)}
-              </span>
             </div>
-
-            <h1 className="max-w-4xl text-4xl font-black leading-tight text-slate-950 sm:text-5xl">
+            
+            <h1 className="text-3xl md:text-5xl font-serif font-bold text-text-primary leading-tight mb-4">
               {article.title}
             </h1>
-
-            <p className="max-w-3xl text-lg leading-8 text-slate-600">
-              {extractPlainText(article.content, 220)}
+            
+            <p className="text-lg md:text-xl text-text-secondary font-sans leading-relaxed mb-6">
+              {extractPlainText(article.content, 200)}
             </p>
-
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-600">
-              <span className="flex items-center gap-2 font-semibold text-slate-800">
-                <User size={14} />
-                {article.author.name ?? "NewsPortal Desk"}
-              </span>
-              <span className="flex items-center gap-2">
-                <Calendar size={14} />
-                {formatDate(article.publishedAt)}
-              </span>
-              <span className="flex items-center gap-2">
-                <Clock3 size={14} />
-                Published story
-              </span>
-            </div>
-
-            <ReaderActions slug={article.slug} title={article.title} />
-          </div>
-
-          <div className="glass-panel overflow-hidden rounded-[32px] border border-white/70 p-3">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-[24px] bg-slate-200">
-              {article.coverImageUrl ? (
-                <Image
-                  src={article.coverImageUrl}
-                  alt={article.title}
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 35vw"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="h-full w-full bg-[linear-gradient(145deg,_#0f766e,_#0f172a)]" />
-              )}
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-y border-structural">
+              <div className="flex flex-col gap-1 text-sm font-sans text-text-secondary">
+                <span className="font-bold text-text-primary uppercase tracking-wide">
+                  By {article.author.name ?? "Bharat Sentinel Desk"}
+                </span>
+                <div className="flex items-center gap-2 text-xs">
+                  <span>Published: {formatDate(article.publishedAt)}</span>
+                  <span>|</span>
+                  <span className="flex items-center gap-1"><Clock3 size={14}/> {readingTime(article.content)}</span>
+                </div>
+              </div>
+              <ReaderActions slug={article.slug} title={article.title} />
             </div>
           </div>
-        </div>
-      </section>
 
-      <section className="mx-auto mt-10 max-w-3xl px-4 sm:px-6">
-        <div className="glass-panel-strong rounded-[34px] border border-white/70 px-6 py-8 sm:px-10 sm:py-10">
-          <TiptapRenderer content={article.content} />
-        </div>
-      </section>
+          {article.coverImageUrl && (
+            <div className="relative aspect-video w-full border-b border-structural">
+              <Image
+                src={article.coverImageUrl}
+                alt={article.title}
+                fill
+                priority
+                className="object-cover"
+              />
+            </div>
+          )}
 
+          <div className="p-6 md:p-8 prose prose-lg prose-headings:font-serif prose-headings:font-bold prose-p:font-sans prose-p:text-text-primary max-w-none">
+            <TiptapRenderer content={article.content} />
+          </div>
+
+          {/* Comments Section (Static UI for now) */}
+          <div className="p-6 md:p-8 border-t border-structural bg-surface-muted/30">
+            <h3 className="text-xl font-condensed font-bold uppercase tracking-widest text-text-primary mb-6 flex items-center gap-2">
+              Join the Conversation <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">0</span>
+            </h3>
+            <div className="bg-white p-4 border border-structural">
+              <p className="text-sm text-text-secondary mb-3">You must be logged in to post a comment.</p>
+              <Link href="/login" className="inline-block border-2 border-primary text-primary px-4 py-2 text-xs font-condensed font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition">
+                Log in to Comment
+              </Link>
+            </div>
+          </div>
+        </article>
+
+        {/* Right Sidebar (4 columns) */}
+        <aside className="lg:col-span-4 space-y-6">
+          <div className="bg-surface-muted border border-structural p-5">
+            <h3 className="font-condensed font-bold uppercase tracking-wider text-secondary border-b-2 border-secondary pb-2 mb-4">
+              Trending Now
+            </h3>
+            <div className="flex flex-col gap-4">
+              {trendingArticles.map((item, index) => (
+                <div key={item.id} className="flex gap-3 pb-4 border-b border-structural last:border-0 last:pb-0">
+                  <span className="text-2xl font-serif font-bold text-surface-border">{index + 1}</span>
+                  <div>
+                    <Link href={`/article/${item.slug}`} className="font-serif font-bold text-text-primary hover:text-primary transition leading-tight">
+                      {item.title}
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Ad Placeholder */}
+          <div className="bg-surface-border/50 border border-structural h-64 flex items-center justify-center text-text-secondary text-xs uppercase tracking-widest">
+            Advertisement
+          </div>
+        </aside>
+
+      </main>
+
+      {/* Related Content (Full width bottom section) */}
       {relatedArticles.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
-          <div className="mb-7">
-            <p className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-500">
-              More coverage
-            </p>
-            <h2 className="mt-2 text-3xl font-black text-slate-950">
-              Continue in {article.category.name}
-            </h2>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {relatedArticles.map((relatedArticle) => (
+        <section className="max-w-[1280px] mx-auto px-4 mt-12">
+          <h2 className="font-condensed font-bold uppercase tracking-wider text-text-primary border-t-4 border-primary pt-2 mb-6">
+            More in {article.category.name}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {relatedArticles.map(related => (
               <ArticleCard
-                key={relatedArticle.id}
-                title={relatedArticle.title}
-                slug={relatedArticle.slug}
-                category={relatedArticle.category}
-                publishedAt={relatedArticle.publishedAt}
-                coverImageUrl={relatedArticle.coverImageUrl}
-                author={relatedArticle.author}
-                content={relatedArticle.content}
+                key={related.id}
+                title={related.title}
+                slug={related.slug}
+                category={related.category}
+                publishedAt={related.publishedAt}
+                coverImageUrl={related.coverImageUrl}
+                author={related.author}
+                content={related.content}
               />
             ))}
           </div>

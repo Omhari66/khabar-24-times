@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { Globe, Mail, Newspaper, Radio, Sparkles } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 
 export default async function SiteFooter() {
   const categories = await prisma.category.findMany({
@@ -11,48 +11,51 @@ export default async function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-16 border-t border-white/60 bg-slate-950 text-slate-300">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.4fr_1fr_1fr] lg:px-8">
-        <div className="space-y-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-950">
-              <Newspaper size={18} />
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
-                Independent Desk
-              </p>
-              <p className="text-2xl font-black tracking-tight text-white">
-                NewsPortal
-              </p>
-            </div>
+    <footer className="mt-16 bg-secondary text-white font-sans border-t-8 border-primary">
+      <div className="max-w-[1280px] mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+        {/* Brand Column */}
+        <div className="space-y-6">
+          <div className="flex flex-col items-start leading-none">
+            <span className="text-[10px] font-condensed font-bold tracking-widest text-primary-light uppercase">
+              The Daily Truth
+            </span>
+            <span className="text-3xl font-serif font-black tracking-tight">
+              Bharat Sentinel
+            </span>
           </div>
-          <p className="max-w-xl text-sm leading-7 text-slate-400">
-            Built for faster scanning, deeper reading, and cleaner collaboration between reporters, editors, and the publishing desk.
+          <p className="text-secondary-light text-sm leading-relaxed max-w-xs">
+            A high-velocity, professional Indian news portal delivering authoritative, urgent, and deeply rooted journalistic integrity.
           </p>
-          <div className="flex flex-wrap gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-            <span className="rounded-full border border-slate-800 px-3 py-2">Breaking</span>
-            <span className="rounded-full border border-slate-800 px-3 py-2">Explainers</span>
-            <span className="rounded-full border border-slate-800 px-3 py-2">Editorial workflow</span>
+          <div className="space-y-2 text-sm text-secondary-light">
+            <div className="flex items-center gap-3">
+              <MapPin size={16} className="text-primary-light" />
+              <span>New Delhi, India</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Phone size={16} className="text-primary-light" />
+              <span>+91 11 2345 6789</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Mail size={16} className="text-primary-light" />
+              <span>editor@bharatsentinel.in</span>
+            </div>
           </div>
         </div>
 
+        {/* Sections */}
         <div>
-          <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.24em] text-slate-500">
-            Explore
+          <h3 className="text-lg font-condensed font-bold uppercase tracking-widest text-white mb-6 border-b border-secondary-light/20 pb-2">
+            Sections
           </h3>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <Link href="/" className="rounded-2xl px-3 py-2 text-slate-300 transition hover:bg-slate-900 hover:text-white">
-              Homepage
-            </Link>
-            <Link href="/search" className="rounded-2xl px-3 py-2 text-slate-300 transition hover:bg-slate-900 hover:text-white">
-              Search
+          <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
+            <Link href="/" className="text-secondary-light hover:text-white transition-colors">
+              Home
             </Link>
             {categories.map((category) => (
               <Link
                 key={category.id}
                 href={`/category/${category.slug}`}
-                className="rounded-2xl px-3 py-2 text-slate-300 transition hover:bg-slate-900 hover:text-white"
+                className="text-secondary-light hover:text-white transition-colors"
               >
                 {category.name}
               </Link>
@@ -60,44 +63,49 @@ export default async function SiteFooter() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <h3 className="text-sm font-bold uppercase tracking-[0.24em] text-slate-500">
-            Reader Features
+        {/* Quick Links */}
+        <div>
+          <h3 className="text-lg font-condensed font-bold uppercase tracking-widest text-white mb-6 border-b border-secondary-light/20 pb-2">
+            Quick Links
           </h3>
-          <div className="space-y-3 text-sm text-slate-400">
-            <Feature icon={Sparkles} text="Share-ready article pages with clean metadata and richer story presentation." />
-            <Feature icon={Radio} text="Live signal sections surface newer coverage and category-led discovery." />
-            <Feature icon={Mail} text="Newsletter slot reserved for future mailing integration." />
-            <Feature icon={Globe} text="Public newsroom and internal desk now share a more cohesive visual system." />
-          </div>
+          <ul className="space-y-3 text-sm">
+            <li><Link href="/search" className="text-secondary-light hover:text-white transition-colors">Search Archive</Link></li>
+            <li><Link href="#" className="text-secondary-light hover:text-white transition-colors">About Us</Link></li>
+            <li><Link href="#" className="text-secondary-light hover:text-white transition-colors">Contact Editorial</Link></li>
+            <li><Link href="#" className="text-secondary-light hover:text-white transition-colors">Privacy Policy</Link></li>
+            <li><Link href="#" className="text-secondary-light hover:text-white transition-colors">Terms of Service</Link></li>
+          </ul>
+        </div>
+
+        {/* Newsletter */}
+        <div>
+          <h3 className="text-lg font-condensed font-bold uppercase tracking-widest text-white mb-6 border-b border-secondary-light/20 pb-2">
+            Newsletter
+          </h3>
+          <p className="text-secondary-light text-sm mb-4">
+            Get the day&apos;s top headlines delivered straight to your inbox.
+          </p>
+          <form className="flex flex-col gap-3">
+            <input 
+              type="email" 
+              placeholder="Your email address" 
+              className="bg-secondary-dark text-white px-4 py-2 border border-secondary-dark focus:border-white focus:outline-none text-sm placeholder:text-secondary-light/50"
+            />
+            <button type="button" className="bg-primary text-white font-condensed font-bold uppercase tracking-widest py-2 hover:bg-primary-dark transition-colors">
+              Subscribe
+            </button>
+          </form>
         </div>
       </div>
 
-      <div className="border-t border-slate-900">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <p>&copy; {year} NewsPortal. Built with Next.js, Prisma, and PostgreSQL.</p>
-          <Link href="/login" className="font-semibold text-slate-400 transition hover:text-white">
+      <div className="border-t border-secondary-dark bg-secondary-dark">
+        <div className="max-w-[1280px] mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-secondary-light font-condensed tracking-wider uppercase">
+          <p>&copy; {year} Bharat Sentinel. Built on NewsPortal CMS.</p>
+          <Link href="/login" className="hover:text-white transition-colors">
             Staff Login
           </Link>
         </div>
       </div>
     </footer>
-  );
-}
-
-function Feature({
-  icon: Icon,
-  text,
-}: {
-  icon: typeof Sparkles;
-  text: string;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-slate-300">
-        <Icon size={14} />
-      </div>
-      <p className="leading-6">{text}</p>
-    </div>
   );
 }

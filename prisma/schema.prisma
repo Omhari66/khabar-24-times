@@ -6,8 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
- 
+  provider = "postgresql"
 }
 
 enum Role {
@@ -21,22 +20,41 @@ enum ArticleStatus {
   PENDING
   PUBLISHED
   REJECTED
+  SUBMITTED
+  EDITOR_REVIEW
+  FACT_CHECK
+  LEGAL_REVIEW
+  APPROVED
+  SCHEDULED
+  ARCHIVED
 }
 
 model User {
-  id        String    @id @default(uuid())
-  name      String?
-  email     String    @unique
-  password  String
-  role      Role      @default(REPORTER)
-  articles  Article[]
+  id       String    @id @default(uuid())
+  name     String?
+  email    String    @unique
+  password String
+  role     Role      @default(REPORTER)
+  articles Article[]
 }
 
 model Category {
-  id        String    @id @default(uuid())
-  name      String
-  slug      String    @unique
-  articles  Article[]
+  id             String     @id @default(uuid())
+  name           String
+  slug           String     @unique
+  articles       Article[]
+  order          Int        @default(0)
+  navVisible     Boolean    @default(true)
+  homeVisible    Boolean    @default(true)
+  icon           String?
+  color          String?
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String?
+  description    String?
+  parentId       String?
+  parent         Category?  @relation("CategoryParent", fields: [parentId], references: [id], onDelete: Restrict)
+  children       Category[] @relation("CategoryParent")
 }
 
 model Article {
@@ -54,4 +72,392 @@ model Article {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   publishedAt   DateTime?
+
+  // Phase 3 Additions - Base Fields
+  subtitle           String?
+  summary            String?
+  excerpt            String?
+  coverImageCaption  String?
+  coverImageAltText  String?
+  readingTime        Int?
+  wordCount          Int?
+  priorityScore      Float     @default(0.0)
+  scheduledPublishAt DateTime?
+  archivedAt         DateTime?
+  deletedAt          DateTime? // For Soft Delete
+  correctionNote     String?
+  sourceNotes        String?
+  editorId           String?
+  reporterId         String?
+  photographerCredit String?
+  locationId         String?
+  edition            String?
+  language           String    @default("en")
+
+  // Flags
+  breaking     Boolean @default(false)
+  featured     Boolean @default(false)
+  trending     Boolean @default(false)
+  editorsPick  Boolean @default(false)
+  liveCoverage Boolean @default(false)
+  factCheck    Boolean @default(false)
+  opinion      Boolean @default(false)
+  sponsored    Boolean @default(false)
+  exclusive    Boolean @default(false)
+  premium      Boolean @default(false)
+
+  // SEO Fields
+  metaTitle       String?
+  metaDescription String?
+  canonicalUrl    String?
+  ogImageUrl      String?
+  twitterImageUrl String?
+  focusKeyword    String?
+  schemaOverride  Json?
+  robotsOverride  String?
+
+  @@index([status, publishedAt])
+  @@index([categoryId, status])
+  @@index([breaking, status])
+  @@index([featured, status])
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  userId        String?
+  userRole      String?
+  action        String
+  entityType    String
+  entityId      String?
+  requestPath   String?
+  requestMethod String?
+  ipAddress     String?
+  userAgent     String?
+  previousValue Json?
+  newValue      Json?
+  status        String // "SUCCESS" | "FAILURE"
+  createdAt     DateTime @default(now())
+}
+
+model Permission {
+  id              String                   @id @default(uuid())
+  name            String                   @unique
+  description     String?
+  rolePermissions RolePermission[]
+  overrides       UserPermissionOverride[]
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  role         Role
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([role, permissionId])
+}
+
+model UserPermissionOverride {
+  id           String     @id @default(uuid())
+  userId       String
+  permissionId String
+  type         String // "ALLOW" | "DENY"
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permissionId])
+}
+
+model Country {
+  id     String  @id @default(uuid())
+  name   String  @unique
+  code   String  @unique
+  states State[]
+}
+
+model State {
+  id        String     @id @default(uuid())
+  name      String
+  code      String?
+  countryId String
+  country   Country    @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  districts District[]
+
+  @@unique([countryId, name])
+}
+
+model District {
+  id      String @id @default(uuid())
+  name    String
+  stateId String
+  state   State  @relation(fields: [stateId], references: [id], onDelete: Cascade)
+  cities  City[]
+
+  @@unique([stateId, name])
+}
+
+model City {
+  id         String   @id @default(uuid())
+  name       String
+  districtId String
+  district   District @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  areas      Area[]
+
+  @@unique([districtId, name])
+}
+
+model Area {
+  id         String  @id @default(uuid())
+  name       String
+  postalCode String?
+  cityId     String
+  city       City    @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([cityId, name])
+}
+
+model AuthorProfile {
+  id          String  @id @default(uuid())
+  userId      String  @unique
+  bio         String?
+  slug        String  @unique
+  avatarUrl   String?
+  socialLinks Json?
+}
+
+model ReporterProfile {
+  id              String  @id @default(uuid())
+  userId          String  @unique
+  beat            String?
+  desk            String?
+  status          String  @default("ACTIVE")
+  contact         String?
+  assignmentReady Boolean @default(true)
+}
+
+model Tag {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  slug        String       @unique
+  articleTags ArticleTag[]
+}
+
+model ArticleTag {
+  id        String @id @default(uuid())
+  articleId String
+  tagId     String
+  tag       Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, tagId])
+}
+
+model RelatedArticle {
+  id               String @id @default(uuid())
+  articleId        String
+  relatedArticleId String
+
+  @@unique([articleId, relatedArticleId])
+}
+
+model ArticleVersion {
+  id           String   @id @default(uuid())
+  articleId    String
+  version      Int
+  title        String
+  subtitle     String?
+  summary      String?
+  excerpt      String?
+  content      Json
+  revisionNote String?
+  authorId     String
+  createdAt    DateTime @default(now())
+
+  @@unique([articleId, version])
+}
+
+model MediaFolder {
+  id       String  @id @default(uuid())
+  name     String
+  parentId String?
+}
+
+model MediaAsset {
+  id           String    @id @default(uuid())
+  filename     String
+  mimeType     String
+  fileSize     Int
+  url          String
+  variants     Json?
+  altText      String?
+  caption      String?
+  copyright    String?
+  photographer String?
+  folderId     String?
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+model PhotoGallery {
+  id            String  @id @default(uuid())
+  title         String
+  description   String?
+  featuredImage String?
+}
+
+model GalleryItem {
+  id           String @id @default(uuid())
+  galleryId    String
+  mediaAssetId String
+  order        Int    @default(0)
+}
+
+model Assignment {
+  id             String   @id @default(uuid())
+  title          String
+  reporterId     String
+  priority       String   @default("MEDIUM")
+  deadline       DateTime
+  status         String   @default("ASSIGNED")
+  notes          String?
+  editorComments String?
+  history        Json?
+  createdAt      DateTime @default(now())
+}
+
+model CmsNotification {
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model CalendarEvent {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  type        String   @default("EVENT")
+}
+
+// ==========================================
+// Phase 6: Production Optimization
+// ==========================================
+
+// Analytics
+model ArticleMetric {
+  id          String   @id @default(uuid())
+  articleId   String   @unique
+  views       Int      @default(0)
+  shares      Int      @default(0)
+  readingTime Int      @default(0) // average in seconds
+  updatedAt   DateTime @updatedAt
+}
+
+model HomepageSlotMetric {
+  id        String   @id @default(uuid())
+  slotName  String   @unique
+  views     Int      @default(0)
+  clicks    Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+model SearchQueryMetric {
+  id       String   @id @default(uuid())
+  query    String   @unique
+  count    Int      @default(1)
+  lastSeen DateTime @default(now())
+}
+
+// Advertisement Platform
+model AdSlot {
+  id          String       @id @default(uuid())
+  name        String       @unique // e.g., "sidebar-top", "inline-article"
+  description String?
+  isActive    Boolean      @default(true)
+  campaigns   AdCampaign[]
+}
+
+model AdCampaign {
+  id          String         @id @default(uuid())
+  title       String
+  slotId      String
+  slot        AdSlot         @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  imageUrl    String?
+  linkUrl     String
+  priority    Int            @default(0)
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean        @default(true)
+  impressions AdImpression[]
+  createdAt   DateTime       @default(now())
+}
+
+model AdImpression {
+  id         String     @id @default(uuid())
+  campaignId String
+  campaign   AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  type       String // "VIEW" or "CLICK"
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime   @default(now())
+}
+
+// Push Notifications
+model PushSubscription {
+  id        String   @id @default(uuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  topics    Json? // Array of topic strings
+  createdAt DateTime @default(now())
+}
+
+model PushTemplate {
+  id        String  @id @default(uuid())
+  name      String  @unique
+  title     String
+  body      String
+  iconUrl   String?
+  actionUrl String?
+}
+
+model PushDeliveryLog {
+  id             String   @id @default(uuid())
+  subscriptionId String
+  status         String // "SUCCESS" | "FAILED"
+  error          String?
+  createdAt      DateTime @default(now())
+}
+
+// Newsletters
+model NewsletterSubscription {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  topics    Json? // Array of topic strings
+  createdAt DateTime @default(now())
+}
+
+model NewsletterTemplate {
+  id      String @id @default(uuid())
+  name    String @unique
+  subject String
+  body    String
+}
+
+model NewsletterDeliveryLog {
+  id        String   @id @default(uuid())
+  email     String
+  status    String // "SUCCESS" | "FAILED"
+  error     String?
+  createdAt DateTime @default(now())
+}
+
+// Monitoring
+model SystemHealthLog {
+  id        String   @id @default(uuid())
+  type      String // "ERROR", "SLOW_QUERY", "METRIC"
+  message   String
+  metadata  Json?
+  createdAt DateTime @default(now())
 }

@@ -60,25 +60,25 @@ export default function ReaderActions({
       <button
         type="button"
         onClick={toggleSave}
-        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-950"
+        className="inline-flex items-center gap-2 rounded-none border-2 border-structural bg-white px-4 py-2 text-xs font-condensed font-bold uppercase tracking-widest text-text-secondary transition hover:border-text-secondary hover:text-text-primary"
       >
-        {saved ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
-        {saved ? "Saved" : "Save story"}
+        {saved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
+        {saved ? "Saved" : "Save"}
       </button>
       <button
         type="button"
         onClick={copyLink}
-        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-950"
+        className="inline-flex items-center gap-2 rounded-none border-2 border-structural bg-white px-4 py-2 text-xs font-condensed font-bold uppercase tracking-widest text-text-secondary transition hover:border-text-secondary hover:text-text-primary"
       >
-        <Link2 size={15} />
-        {copied ? "Copied" : "Copy link"}
+        <Link2 size={14} />
+        {copied ? "Copied" : "Copy Link"}
       </button>
       <button
         type="button"
         onClick={share}
-        className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+        className="inline-flex items-center gap-2 rounded-none border-2 border-primary bg-primary px-4 py-2 text-xs font-condensed font-bold uppercase tracking-widest text-white transition hover:bg-primary-dark hover:border-primary-dark"
       >
-        <Share2 size={15} />
+        <Share2 size={14} />
         Share
       </button>
     </div>

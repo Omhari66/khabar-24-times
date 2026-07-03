@@ -1,25 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Calendar,
-  Clock3,
-  Flame,
-  Layers3,
-  Newspaper,
-  Radar,
-  Sparkles,
-} from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import ArticleCard from "./components/ArticleCard";
 import { extractPlainText } from "./components/TiptapRenderer";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const metadata = {
-  title: "Homepage",
-  description:
-    "Stay informed with the latest reporting, analysis, and category-led discovery from NewsPortal.",
+  title: "Home",
+  description: "Bharat Sentinel - Reliable Indian News",
 };
 
 const ARTICLE_INCLUDE = {
@@ -29,72 +19,79 @@ const ARTICLE_INCLUDE = {
 
 function formatDate(date: Date | null) {
   if (!date) return "";
-
-  return new Date(date).toLocaleDateString(undefined, {
-    month: "long",
+  return new Date(date).toLocaleDateString("en-IN", {
+    month: "short",
     day: "numeric",
     year: "numeric",
   });
 }
 
-function readingTime(content: unknown) {
-  const words = extractPlainText(content, 10_000).split(/\s+/).filter(Boolean).length;
-  return `${Math.max(1, Math.ceil(words / 220))} min read`;
-}
-
 export default async function HomePage() {
-  const [featuredArticle, latestArticles, categories, publishedCount] =
-    await Promise.all([
-      prisma.article.findFirst({
-        where: { status: "PUBLISHED" },
-        orderBy: { publishedAt: "desc" },
-        include: ARTICLE_INCLUDE,
-      }),
-      prisma.article.findMany({
-        where: { status: "PUBLISHED" },
-        orderBy: { publishedAt: "desc" },
-        take: 8,
-        include: ARTICLE_INCLUDE,
-      }),
-      prisma.category.findMany({
-        orderBy: { name: "asc" },
-        include: {
-          _count: {
-            select: {
-              articles: true,
-            },
-          },
-        },
-        take: 6,
-      }),
-      prisma.article.count({
-        where: { status: "PUBLISHED" },
-      }),
-    ]);
-
-  const supportingArticles = latestArticles.slice(1, 4);
-  const gridArticles = latestArticles.slice(4);
-  const tickerArticles = latestArticles.slice(0, 6);
+  const [
+    featuredArticle,
+    breakingArticles,
+    topHeadlines,
+    politics,
+    business,
+    localNews,
+  ] = await Promise.all([
+    // Hero Story (Featured)
+    prisma.article.findFirst({
+      where: { status: "PUBLISHED", featured: true },
+      orderBy: { publishedAt: "desc" },
+      include: ARTICLE_INCLUDE,
+    }),
+    // Breaking News
+    prisma.article.findMany({
+      where: { status: "PUBLISHED", breaking: true },
+      orderBy: { publishedAt: "desc" },
+      take: 5,
+    }),
+    // Trending / Editor's Pick as Top Headlines
+    prisma.article.findMany({
+      where: { status: "PUBLISHED", OR: [{ trending: true }, { editorsPick: true }] },
+      orderBy: { publishedAt: "desc" },
+      take: 6,
+      include: ARTICLE_INCLUDE,
+    }),
+    // Politics
+    prisma.article.findMany({
+      where: { status: "PUBLISHED", category: { slug: "politics" } },
+      orderBy: { publishedAt: "desc" },
+      take: 4,
+      include: ARTICLE_INCLUDE,
+    }),
+    // Business
+    prisma.article.findMany({
+      where: { status: "PUBLISHED", category: { slug: "business" } },
+      orderBy: { publishedAt: "desc" },
+      take: 4,
+      include: ARTICLE_INCLUDE,
+    }),
+    // Local-first experience simulation (Priority: local locations)
+    // For now we'll fetch general articles and pretend it's a local feed
+    prisma.article.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: { publishedAt: "desc" },
+      take: 4,
+      skip: 7,
+      include: ARTICLE_INCLUDE,
+    }),
+  ]);
 
   return (
-    <div className="pb-10">
-      {tickerArticles.length > 0 && (
-        <section className="border-b border-white/60 bg-slate-950 text-white">
-          <div className="mx-auto flex max-w-7xl items-center gap-5 overflow-hidden px-4 py-3 sm:px-6 lg:px-8">
-            <div className="flex shrink-0 items-center gap-2 rounded-full bg-white/10 px-3 py-1">
-              <Flame size={14} className="text-amber-300" />
-              <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-amber-200">
-                Breaking
-              </span>
+    <div className="bg-background min-h-screen">
+      {/* Ticker */}
+      {breakingArticles.length > 0 && (
+        <section className="bg-primary text-white border-b-4 border-primary-dark">
+          <div className="max-w-[1280px] mx-auto px-4 flex items-center h-10 overflow-hidden">
+            <div className="bg-primary-dark px-3 py-1 text-xs font-bold uppercase tracking-wider h-full flex items-center z-10 shrink-0">
+              BREAKING
             </div>
-            <div className="min-w-0 flex-1 overflow-hidden">
-              <div className="ticker-track inline-flex gap-10 whitespace-nowrap">
-                {[...tickerArticles, ...tickerArticles].map((article, index) => (
-                  <Link
-                    key={`${article.id}-${index}`}
-                    href={`/article/${article.slug}`}
-                    className="text-sm text-slate-300 transition hover:text-white"
-                  >
+            <div className="flex-1 overflow-hidden ml-4">
+              <div className="ticker-track space-x-8">
+                {[...breakingArticles, ...breakingArticles].map((article, i) => (
+                  <Link key={`${article.id}-${i}`} href={`/article/${article.slug}`} className="text-sm font-medium hover:underline">
                     {article.title}
                   </Link>
                 ))}
@@ -104,215 +101,143 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="grain-overlay relative overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8 lg:pt-14">
-          <div className="grid gap-6 lg:grid-cols-[1.6fr_0.9fr]">
+      {/* Main Content Grid */}
+      <main className="max-w-[1280px] mx-auto px-4 py-6 space-y-10">
+        
+        {/* Top Section */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          
+          {/* Hero Story (8 columns) */}
+          <div className="lg:col-span-8">
             {featuredArticle ? (
-              <article className="relative overflow-hidden rounded-[32px] bg-slate-950 text-white shadow-2xl shadow-slate-900/10">
-                <div className="absolute inset-0">
-                  {featuredArticle.coverImageUrl ? (
+              <article className="group relative border border-structural bg-white">
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-surface-muted">
+                  {featuredArticle.coverImageUrl && (
                     <Image
                       src={featuredArticle.coverImageUrl}
                       alt={featuredArticle.title}
                       fill
-                      priority
-                      sizes="(max-width: 1024px) 100vw, 65vw"
-                      className="object-cover opacity-45"
+                      className="object-cover transition duration-300 group-hover:scale-105"
                     />
-                  ) : (
-                    <div className="h-full w-full bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.35),_transparent_35%),linear-gradient(140deg,_#0f172a,_#134e4a,_#1f2937)]" />
                   )}
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent" />
-                <div className="relative flex min-h-[540px] flex-col justify-end p-7 sm:p-10">
-                  <div className="mb-6 flex flex-wrap items-center gap-3 text-sm">
-                    <span className="rounded-full bg-white/12 px-3 py-1 font-semibold backdrop-blur">
-                      Lead Story
-                    </span>
-                    <Link
-                      href={`/category/${featuredArticle.category.slug}`}
-                      className="rounded-full bg-emerald-400/20 px-3 py-1 font-semibold text-emerald-100 transition hover:bg-emerald-400/30"
-                    >
-                      {featuredArticle.category.name}
-                    </Link>
-                  </div>
-                  <h1 className="max-w-4xl text-4xl font-black leading-tight sm:text-5xl">
-                    <Link href={`/article/${featuredArticle.slug}`} className="transition hover:text-emerald-200">
+                <div className="p-6">
+                  <Link href={`/category/${featuredArticle.category.slug}`} className="text-primary font-condensed font-bold uppercase tracking-widest text-xs mb-2 block">
+                    {featuredArticle.category.name}
+                  </Link>
+                  <h1 className="text-4xl font-serif font-bold text-text-primary leading-tight mb-3">
+                    <Link href={`/article/${featuredArticle.slug}`} className="hover:text-primary transition">
                       {featuredArticle.title}
                     </Link>
                   </h1>
-                  <p className="mt-5 max-w-2xl text-base leading-8 text-slate-200 sm:text-lg">
-                    {extractPlainText(featuredArticle.content, 220)}
+                  <p className="text-text-secondary font-sans text-lg mb-4">
+                    {extractPlainText(featuredArticle.content, 200)}
                   </p>
-                  <div className="mt-7 flex flex-wrap items-center gap-5 text-sm text-slate-200">
-                    <span>{featuredArticle.author.name ?? "NewsPortal Desk"}</span>
-                    <span className="flex items-center gap-1.5">
-                      <Calendar size={14} />
-                      {formatDate(featuredArticle.publishedAt)}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Clock3 size={14} />
-                      {readingTime(featuredArticle.content)}
-                    </span>
-                  </div>
-                  <div className="mt-8 flex flex-wrap items-center gap-3">
-                    <Link
-                      href={`/article/${featuredArticle.slug}`}
-                      className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-emerald-50"
-                    >
-                      Read full report
-                      <ArrowRight size={15} />
-                    </Link>
-                    <Link
-                      href={`/category/${featuredArticle.category.slug}`}
-                      className="inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-                    >
-                      Explore section
-                    </Link>
+                  <div className="text-xs text-text-secondary font-sans font-medium uppercase">
+                    By {featuredArticle.author.name ?? "Desk"} | {formatDate(featuredArticle.publishedAt)}
                   </div>
                 </div>
               </article>
             ) : (
-              <div className="glass-panel-strong flex min-h-[420px] flex-col items-center justify-center rounded-[32px] border border-white/70 p-10 text-center">
-                <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-950 text-white">
-                  <Newspaper size={30} />
-                </div>
-                <h1 className="text-4xl font-black tracking-tight text-slate-950">
-                  NewsPortal is ready.
-                </h1>
-                <p className="mt-4 max-w-xl text-base leading-8 text-slate-600">
-                  Publish the first article to activate the public newsroom, category discovery, search, and editorial flow.
-                </p>
+              <div className="h-64 bg-surface-muted border border-structural flex items-center justify-center text-text-secondary">
+                No featured story available
               </div>
             )}
-
-            <aside className="space-y-6">
-              <div className="glass-panel-strong rounded-[32px] border border-white/70 p-6">
-                <div className="mb-5 flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800">
-                    <Radar size={18} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
-                      Live Snapshot
-                    </p>
-                    <h2 className="text-xl font-black text-slate-950">
-                      Today&apos;s signal
-                    </h2>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <Metric label="Published stories" value={String(publishedCount)} />
-                  <Metric label="Active sections" value={String(categories.length)} />
-                </div>
-              </div>
-
-              <div className="glass-panel rounded-[32px] border border-white/70 p-6">
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
-                    <Sparkles size={16} />
-                  </div>
-                  <h2 className="text-lg font-black text-slate-950">Fast reads</h2>
-                </div>
-                <div className="space-y-4">
-                  {supportingArticles.length > 0 ? (
-                    supportingArticles.map((article, index) => (
-                      <Link
-                        key={article.id}
-                        href={`/article/${article.slug}`}
-                        className="group block rounded-3xl border border-white/70 bg-white/70 p-4 transition hover:border-slate-200 hover:bg-white"
-                      >
-                        <div className="mb-2 flex items-center justify-between gap-3">
-                          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                            0{index + 1}
-                          </span>
-                          <span className="text-xs font-medium text-emerald-700">
-                            {article.category.name}
-                          </span>
-                        </div>
-                        <h3 className="font-bold leading-6 text-slate-900 transition group-hover:text-emerald-800">
-                          {article.title}
-                        </h3>
-                        <p className="mt-2 text-sm leading-6 text-slate-600">
-                          {extractPlainText(article.content, 100)}
-                        </p>
-                      </Link>
-                    ))
-                  ) : (
-                    <p className="text-sm text-slate-500">No supporting stories yet.</p>
-                  )}
-                </div>
-              </div>
-            </aside>
           </div>
 
-          {categories.length > 0 && (
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {categories.map((category) => (
-                <Link
-                  key={category.id}
-                  href={`/category/${category.slug}`}
-                  className="glass-panel flex items-center justify-between rounded-[28px] border border-white/70 px-5 py-4 transition hover:-translate-y-0.5 hover:bg-white/95"
-                >
+          {/* Top Headlines (4 columns) */}
+          <aside className="lg:col-span-4 border border-structural bg-surface-muted p-5">
+            <h2 className="font-condensed font-bold uppercase tracking-wider text-secondary border-b-2 border-secondary pb-2 mb-4">
+              Trending & Editor's Picks
+            </h2>
+            <div className="flex flex-col gap-4">
+              {topHeadlines.length > 0 ? topHeadlines.map((article, index) => (
+                <div key={article.id} className="flex gap-3 pb-4 border-b border-structural last:border-0 last:pb-0">
+                  <span className="text-2xl font-serif font-bold text-surface-border">{index + 1}</span>
                   <div>
-                    <p className="text-sm font-bold text-slate-900">{category.name}</p>
-                    <p className="text-xs text-slate-500">
-                      {category._count.articles} article{category._count.articles === 1 ? "" : "s"}
-                    </p>
+                    <Link href={`/article/${article.slug}`} className="font-serif font-bold text-text-primary hover:text-primary transition leading-tight">
+                      {article.title}
+                    </Link>
+                    <div className="text-xs text-text-secondary mt-1">
+                      {formatDate(article.publishedAt)}
+                    </div>
                   </div>
-                  <Layers3 size={18} className="text-slate-400" />
-                </Link>
+                </div>
+              )) : (
+                <div className="text-sm text-text-secondary">No trending articles right now.</div>
+              )}
+            </div>
+          </aside>
+        </section>
+
+        <hr className="border-structural" />
+
+        {/* Categories Section */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Politics */}
+          <div>
+            <h2 className="font-condensed font-bold uppercase tracking-wider text-text-primary border-t-4 border-primary pt-2 mb-4">
+              Politics
+            </h2>
+            <div className="flex flex-col gap-5">
+              {politics.map(article => (
+                <ArticleCard
+                  key={article.id}
+                  title={article.title}
+                  slug={article.slug}
+                  category={article.category}
+                  publishedAt={article.publishedAt}
+                  coverImageUrl={article.coverImageUrl}
+                  author={article.author}
+                  content={article.content}
+                />
               ))}
             </div>
-          )}
-        </div>
-      </section>
+          </div>
 
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-end justify-between gap-4">
+          {/* Business */}
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-500">
-              Fresh coverage
-            </p>
-            <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">
-              Latest reports
+            <h2 className="font-condensed font-bold uppercase tracking-wider text-text-primary border-t-4 border-primary pt-2 mb-4">
+              Business
             </h2>
+            <div className="flex flex-col gap-5">
+              {business.map(article => (
+                <ArticleCard
+                  key={article.id}
+                  title={article.title}
+                  slug={article.slug}
+                  category={article.category}
+                  publishedAt={article.publishedAt}
+                  coverImageUrl={article.coverImageUrl}
+                  author={article.author}
+                  content={article.content}
+                />
+              ))}
+            </div>
           </div>
-          <Link href="/search" className="text-sm font-semibold text-slate-600 transition hover:text-slate-950">
-            Search all stories
-          </Link>
-        </div>
 
-        {gridArticles.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {gridArticles.map((article) => (
-              <ArticleCard
-                key={article.id}
-                title={article.title}
-                slug={article.slug}
-                category={article.category}
-                publishedAt={article.publishedAt}
-                coverImageUrl={article.coverImageUrl}
-                author={article.author}
-                content={article.content}
-              />
-            ))}
+          {/* Local News */}
+          <div>
+            <h2 className="font-condensed font-bold uppercase tracking-wider text-text-primary border-t-4 border-primary pt-2 mb-4">
+              Local News
+            </h2>
+            <div className="flex flex-col gap-5">
+              {localNews.map(article => (
+                <ArticleCard
+                  key={article.id}
+                  title={article.title}
+                  slug={article.slug}
+                  category={article.category}
+                  publishedAt={article.publishedAt}
+                  coverImageUrl={article.coverImageUrl}
+                  author={article.author}
+                  content={article.content}
+                />
+              ))}
+            </div>
           </div>
-        ) : (
-          <div className="glass-panel-strong rounded-[32px] border border-white/70 p-8 text-sm text-slate-600">
-            Publish more stories to populate the latest reports grid.
-          </div>
-        )}
-      </section>
-    </div>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[24px] border border-white/70 bg-white/75 p-4">
-      <p className="text-xs uppercase tracking-[0.2em] text-slate-500">{label}</p>
-      <p className="mt-2 text-3xl font-black text-slate-950">{value}</p>
+        </section>
+      </main>
     </div>
   );
 }

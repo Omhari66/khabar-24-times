@@ -39,6 +39,100 @@ async function main() {
   }
 
   console.log("\nSeeding complete! 7 categories upserted.");
+
+  console.log("\nSeeding permissions...");
+  const permissionsList = [
+    "category.create",
+    "category.update",
+    "category.delete",
+    "category.view",
+    "upload.signature.generate",
+    "article.create",
+    "article.publish",
+    "article.schedule",
+    "article.manage",
+    "article.delete",
+    "article.restore",
+    "homepage.manage",
+    "media.manage",
+    "user.manage",
+    "seo.manage",
+    "analytics.view",
+    "ads.manage",
+    "notification.manage",
+    "settings.manage",
+    "audit.view",
+    "location.manage",
+    "author.manage",
+    "reporter.manage",
+    "tag.manage",
+    "gallery.manage",
+    "assignment.manage",
+    "workflow.manage",
+    "calendar.manage",
+  ];
+
+  const rolePermissionsMap = {
+    REPORTER: [
+      "upload.signature.generate",
+      "article.create",
+      "article.manage",
+      "article.delete",
+      "media.manage",
+      "gallery.manage"
+    ],
+    EDITOR: [
+      "upload.signature.generate",
+      "article.create",
+      "article.publish",
+      "article.schedule",
+      "article.manage",
+      "article.delete",
+      "article.restore",
+      "category.view",
+      "homepage.manage",
+      "media.manage",
+      "gallery.manage",
+      "assignment.manage",
+      "workflow.manage",
+      "calendar.manage",
+      "tag.manage",
+      "location.manage",
+      "author.manage",
+      "reporter.manage"
+    ],
+    ADMIN: permissionsList,
+  };
+
+  for (const name of permissionsList) {
+    await prisma.permission.upsert({
+      where: { name },
+      update: {},
+      create: { name },
+    });
+  }
+
+  for (const [role, perms] of Object.entries(rolePermissionsMap)) {
+    for (const permName of perms) {
+      const dbPerm = await prisma.permission.findUnique({ where: { name: permName } });
+      if (dbPerm) {
+        await prisma.rolePermission.upsert({
+          where: {
+            role_permissionId: {
+              role: role as any,
+              permissionId: dbPerm.id,
+            },
+          },
+          update: {},
+          create: {
+            role: role as any,
+            permissionId: dbPerm.id,
+          },
+        });
+      }
+    }
+  }
+  console.log("Permissions and role mappings seeded successfully!");
 }
 
 main()

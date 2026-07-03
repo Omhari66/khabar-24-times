@@ -71,6 +71,25 @@ export default async function EditorDashboard({ searchParams }: EditorDashboardP
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 p-6 md:p-10 font-sans">
       <div className="max-w-7xl mx-auto space-y-12">
 
+        {/* Navigation Tabs */}
+        <div className="flex flex-wrap gap-4 border-b border-slate-200 dark:border-slate-800 pb-3 mb-8">
+          <Link href="/dashboard/editor" className="text-sm font-bold border-b-2 border-blue-500 pb-3 -mb-3.5 text-blue-600 dark:text-blue-400">
+            Review Queue
+          </Link>
+          <Link href="/dashboard/admin/homepage" className="text-sm font-semibold text-slate-500 hover:text-slate-955 dark:text-slate-400 dark:hover:text-white pb-3">
+            Homepage Builder
+          </Link>
+          <Link href="/dashboard/admin/kanban" className="text-sm font-semibold text-slate-500 hover:text-slate-955 dark:text-slate-400 dark:hover:text-white pb-3">
+            Kanban Board
+          </Link>
+          <Link href="/dashboard/admin/planning" className="text-sm font-semibold text-slate-500 hover:text-slate-955 dark:text-slate-400 dark:hover:text-white pb-3">
+            Planning Board
+          </Link>
+          <Link href="/" className="text-sm font-semibold text-slate-500 hover:text-slate-955 dark:text-slate-400 dark:hover:text-white pb-3 ml-auto">
+            View Website ↗
+          </Link>
+        </div>
+
         {/* Forbidden access banner */}
         {showForbiddenBanner && (
           <div

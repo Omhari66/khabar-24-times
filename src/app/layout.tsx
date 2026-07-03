@@ -1,27 +1,30 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Source_Serif_4, Work_Sans, Archivo_Narrow } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
+const sourceSerif = Source_Serif_4({
+  subsets: ["latin"],
+  variable: "--font-serif",
 });
 
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+const workSans = Work_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
+
+const archivoNarrow = Archivo_Narrow({
+  subsets: ["latin"],
+  variable: "--font-condensed",
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "NewsPortal | Signal-first journalism",
-    template: "%s | NewsPortal",
+    default: "Bharat Sentinel | Reliable Indian News",
+    template: "%s | Bharat Sentinel",
   },
   description:
-    "A modern newsroom experience with live reporting, deep analysis, and editorial workflows for reporters, editors, and administrators.",
+    "A modern, authoritative newsroom experience with live reporting, deep analysis, and local news.",
 };
 
 export default function RootLayout({
@@ -32,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${sourceSerif.variable} ${workSans.variable} ${archivoNarrow.variable} antialiased`}
       >
         <Providers>{children}</Providers>
       </body>

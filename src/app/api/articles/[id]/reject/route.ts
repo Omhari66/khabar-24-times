@@ -1,66 +1,26 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { withApiHandler } from "@/lib/api/handler";
+import { apiSuccess } from "@/lib/api/response";
+import { parseJsonBody, requiredTrimmedString } from "@/lib/api/validation";
+import { ArticleRepository } from "@/lib/repositories/article-repository";
+import { ArticleService } from "@/lib/services/article-service";
+import { requirePermission } from "@/lib/permissions/guard";
 
-export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+const rejectSchema = z.object({
+  rejectionNote: requiredTrimmedString("Rejection note is required"),
+});
 
-    const role = session.user.role;
-    if (role !== "EDITOR" && role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Forbidden: Only editors and admins can reject articles" },
-        { status: 403 }
-      );
-    }
+const articleService = new ArticleService(new ArticleRepository());
 
-    const body = await req.json();
-    const { rejectionNote } = body;
+export const POST = withApiHandler({ scope: "api/articles/[id]/reject" }, async (req, { params }: { params: { id: string } }) => {
+  await requirePermission("article.publish");
 
-    if (!rejectionNote || typeof rejectionNote !== "string" || !rejectionNote.trim()) {
-      return NextResponse.json(
-        { error: "Bad Request: A non-empty rejection note is required" },
-        { status: 400 }
-      );
-    }
+  const { rejectionNote } = await parseJsonBody(req, rejectSchema);
 
-    const article = await prisma.article.findUnique({
-      where: { id: params.id },
-    });
+  const updatedArticle = await articleService.updateArticle(params.id, {
+    status: "REJECTED",
+    rejectionNote,
+  });
 
-    if (!article) {
-      return NextResponse.json({ error: "Article not found" }, { status: 404 });
-    }
-
-    if (article.status !== "PENDING") {
-      return NextResponse.json(
-        { error: "Article is not pending review" },
-        { status: 409 }
-      );
-    }
-
-    const updated = await prisma.article.update({
-      where: { id: params.id },
-      data: {
-        status: "REJECTED",
-        rejectionNote: rejectionNote.trim(),
-        publishedAt: null,
-      },
-    });
-
-    return NextResponse.json(updated);
-  } catch (error) {
-    console.error("Error rejecting article:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
-}
+  return apiSuccess(updatedArticle);
+});

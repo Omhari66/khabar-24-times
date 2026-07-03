@@ -39,11 +39,17 @@ export default async function ReporterDashboard({ searchParams }: ReporterDashbo
     redirect("/dashboard?error=forbidden");
   }
 
-  const articles = await prisma.article.findMany({
-    where: { authorId: session.user.id },
-    include: { category: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const [articles, assignments] = await Promise.all([
+    prisma.article.findMany({
+      where: { authorId: session.user.id },
+      include: { category: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.assignment.findMany({
+      where: { reporterId: session.user.id, status: { not: "COMPLETED" } },
+      orderBy: { deadline: "asc" },
+    })
+  ]);
 
   // Compute stats
   const stats = {
@@ -129,7 +135,13 @@ export default async function ReporterDashboard({ searchParams }: ReporterDashbo
               Welcome back, <span className="font-semibold text-slate-700 dark:text-slate-300">{session.user.name || session.user.email}</span>. Manage and write your news stories.
             </p>
           </div>
-          <div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 rounded-xl font-medium transition-all"
+            >
+              View Website ↗
+            </Link>
             <Link
               href="/dashboard/reporter/new"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium shadow-md shadow-blue-500/10 hover:shadow-lg transition-all hover:-translate-y-0.5"
@@ -158,6 +170,34 @@ export default async function ReporterDashboard({ searchParams }: ReporterDashbo
             </div>
           ))}
         </div>
+
+        {/* Assignments Section */}
+        {assignments.length > 0 && (
+          <div className="mb-10">
+            <h2 className="text-xl font-bold mb-4">Active Assignments</h2>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {assignments.map(assignment => (
+                <div key={assignment.id} className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-blue-100 dark:border-blue-900/30 shadow-sm relative overflow-hidden">
+                  <div className={`absolute top-0 left-0 w-1.5 h-full ${
+                    assignment.priority === "URGENT" ? "bg-red-500" :
+                    assignment.priority === "HIGH" ? "bg-orange-500" :
+                    assignment.priority === "MEDIUM" ? "bg-blue-500" : "bg-slate-400"
+                  }`} />
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-semibold">{assignment.title}</h3>
+                  </div>
+                  <div className="flex items-center gap-2 mt-3 text-xs text-slate-500">
+                    <Clock size={14} />
+                    <span>Due {new Date(assignment.deadline).toLocaleDateString()}</span>
+                  </div>
+                  {assignment.notes && (
+                    <p className="mt-3 text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 p-2 rounded-lg">{assignment.notes}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Articles List Container */}
         {articles.length === 0 ? (

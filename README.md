@@ -1,99 +1,83 @@
-# Newsroom CMS (News Portal)
+# Bharat Sentinel - Enterprise News Portal
 
-A modern, role-based Newsroom Content Management System (CMS) built with Next.js 14, React, Tailwind CSS, Prisma, PostgreSQL, and NextAuth. It features a rich-text article editor (TipTap), image uploads (Cloudinary), and a robust editorial workflow.
+A modern, production-ready Indian news platform built on the Next.js 14 App Router, featuring a high-velocity CMS, robust editorial workflows, and enterprise-grade SEO and security.
 
-## 🚀 Key Features
+## Features
 
-*   **Role-Based Access Control (RBAC):**
-    *   **Reporter:** Create, edit, and save drafts of articles, upload cover images, and submit them for review.
-    *   **Editor:** Review submitted articles, publish them, or reject them with feedback notes.
-    *   **Admin:** Oversee users, assign roles, and manage the platform.
-*   **Rich Text Editor (TipTap Integration):** Advanced WYSIWYG editor supporting links, colors, text alignment, YouTube video embeds, highlights, underlines, and character counting.
-*   **Media Uploads:** Seamless cover image uploads integrated directly with Cloudinary.
-*   **Robust Workflow Statuses:** `DRAFT` ➔ `PENDING` ➔ `PUBLISHED` / `REJECTED` (with revision notes).
-*   **Responsive Dashboard:** Premium modern UI built with Tailwind CSS, offering dedicated workspaces for Reporters, Editors, and Admins.
+- **Next.js 14 App Router**: Lightning-fast server components and API routes.
+- **Prisma + PostgreSQL**: Resilient relational database modeling with APM integration.
+- **Editorial CMS Workflow**: Granular permission hierarchies (Admin, Editor, Reporter) governing the publication lifecycle.
+- **Rich Media Library**: Centralized asset management integrating Cloudinary.
+- **Advanced SEO**: Native JSON-LD, automated Sitemaps, RSS feeds, and highly optimized edge delivery.
+- **Observability**: Built-in system health checks, JSON structured logging, and slow-query detection.
 
----
+## Technology Stack
 
-## 🛠️ Tech Stack
+- **Framework**: [Next.js 14](https://nextjs.org/)
+- **Database ORM**: [Prisma](https://www.prisma.io/)
+- **Styling**: TailwindCSS & Lucide React
+- **Authentication**: NextAuth.js
+- **Testing**: Playwright E2E
 
-*   **Framework:** [Next.js 14](https://nextjs.org/) (App Router)
-*   **Database ORM:** [Prisma](https://www.prisma.io/)
-*   **Database:** PostgreSQL
-*   **Authentication:** [NextAuth.js](https://next-auth.js.org/) (using Credentials Provider)
-*   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-*   **Rich-Text Editing:** [TipTap Editor](https://tiptap.dev/)
-*   **Cloud Storage:** [Cloudinary](https://cloudinary.com/) (for cover images)
+## Architecture
+\`\`\`mermaid
+graph TD
+    Client[Browser/PWA] --> Proxy[Nginx Reverse Proxy]
+    Proxy --> NextJS[Next.js App Router]
+    NextJS --> Auth[NextAuth.js]
+    NextJS --> Services[Internal Services]
+    Services --> DB[(PostgreSQL)]
+\`\`\`
 
----
+## Installation
 
-## 🗄️ Database Models
+1. **Clone the repository:**
+   \`\`\`bash
+   git clone https://github.com/organization/news-portal.git
+   cd news-portal
+   \`\`\`
 
-The schema consists of the following primary models:
+2. **Install Dependencies:**
+   \`\`\`bash
+   npm ci
+   \`\`\`
 
-*   **User:** Contains account details, role (`REPORTER`, `EDITOR`, `ADMIN`), and references to authored articles.
-*   **Category:** Dynamically groups articles (e.g., Politics, Sports, Tech).
-*   **Article:** Manages content (stored as JSON from TipTap), slug, status (`DRAFT`, `PENDING`, `PUBLISHED`, `REJECTED`), rejection notes, timestamps, author, and category relationships.
+3. **Configure Environment:**
+   Copy `.env.example` to `.env` and fill the variables.
+   \`\`\`bash
+   cp .env.example .env
+   \`\`\`
 
----
+4. **Initialize Database:**
+   \`\`\`bash
+   npx prisma generate
+   npx prisma db push
+   \`\`\`
 
-## ⚙️ Getting Started
+5. **Run Development Server:**
+   \`\`\`bash
+   npm run dev
+   \`\`\`
 
-Follow these steps to get your local development environment set up:
+## Deployment
 
-### Prerequisites
-*   Node.js (v18.x or later)
-*   PostgreSQL database instance
-*   Cloudinary Account (for image uploads)
+Refer to the complete `docs/Deployment.md` guide. The project includes a multi-stage Dockerfile and a production-grade Nginx configuration out-of-the-box.
+Run:
+\`\`\`bash
+docker-compose up -d --build
+\`\`\`
 
-### 1. Clone the repository
-```bash
-git clone <your-repository-url>
-cd news-portal
-```
+## Documentation
 
-### 2. Install dependencies
-```bash
-npm install
-```
+Full architectural guides, testing plans, and user manuals are available in the [`docs/`](./docs/) directory.
 
-### 3. Configure environment variables
-Create a `.env` file in the root directory (based on your configuration) and add the following keys:
-```env
-# Database connection
-DATABASE_URL="postgresql://username:password@localhost:5432/newsroom_db?schema=public"
+## Testing
 
-# Next Auth secret & URL
-NEXTAUTH_SECRET="your-super-secret-key"
-NEXTAUTH_URL="http://localhost:3000"
+Run Playwright End-to-End tests:
+\`\`\`bash
+npx playwright test
+\`\`\`
 
-# Cloudinary credentials
-CLOUDINARY_CLOUD_NAME="your-cloud-name"
-CLOUDINARY_API_KEY="your-api-key"
-CLOUDINARY_API_SECRET="your-api-secret"
-```
+## License
 
-### 4. Setup Database & Prisma
-Run the Prisma migrations to create the database tables and seed initial data:
-```bash
-# Run migrations
-npx prisma migrate dev --name init
-
-# Run seed script (if configured)
-npx prisma db seed
-```
-
-### 5. Start the development server
-```bash
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
-
----
-
-## 📈 Scripts
-
-*   `npm run dev` - Starts the development server.
-*   `npm run build` - Builds the application for production.
-*   `npm run start` - Starts the built production server.
-*   `npm run lint` - Runs ESLint to check for code quality issues.
+MIT License. See [LICENSE](LICENSE) for details.
