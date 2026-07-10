@@ -3,14 +3,21 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, Search, X } from "lucide-react";
+import { Menu, Search, X, ChevronRight } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
+
+type SubCategory = {
+  id: string;
+  name: string;
+  slug: string;
+};
 
 type Category = {
   id: string;
   name: string;
   slug: string;
+  children?: SubCategory[];
 };
 
 export default function SiteHeaderClient({
@@ -21,17 +28,21 @@ export default function SiteHeaderClient({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [expandedMobileCategory, setExpandedMobileCategory] = useState<string | null>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const { data: session, status } = useSession();
 
-  // If the image loaded broken before React hydration, naturalWidth will be 0.
-  // This hook catches it and switches to the letter fallback immediately.
   useEffect(() => {
     if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth === 0) {
       setImgError(true);
     }
   }, [session?.user?.image]);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setOpen(false);
+    setExpandedMobileCategory(null);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-structural shadow-sm font-sans">
@@ -133,15 +144,19 @@ export default function SiteHeaderClient({
         <div className="max-w-[1280px] mx-auto px-4 h-12 flex items-center justify-between">
           <nav className="flex items-center h-full space-x-1 overflow-x-auto scrollbar-hide">
             <HeaderLink href="/" active={pathname === "/"}>HOME</HeaderLink>
-            {categories.map((category) => (
-              <HeaderLink
-                key={category.id}
-                href={`/category/${category.slug}`}
-                active={pathname === `/category/${category.slug}`}
-              >
-                {category.name.toUpperCase()}
-              </HeaderLink>
-            ))}
+            {categories.map((category) =>
+              category.children && category.children.length > 0 ? (
+                <DropdownNavItem key={category.id} category={category} pathname={pathname} />
+              ) : (
+                <HeaderLink
+                  key={category.id}
+                  href={`/category/${category.slug}`}
+                  active={pathname === `/category/${category.slug}`}
+                >
+                  {category.name.toUpperCase()}
+                </HeaderLink>
+              )
+            )}
           </nav>
         </div>
       </div>
@@ -161,18 +176,60 @@ export default function SiteHeaderClient({
                 <Search size={18} />
               </button>
             </form>
-            <nav className="grid grid-cols-2 gap-2">
+            <nav className="flex flex-col">
               <HeaderLink href="/" active={pathname === "/"}>HOME</HeaderLink>
-              {categories.map((category) => (
-                <HeaderLink
-                  key={category.id}
-                  href={`/category/${category.slug}`}
-                  active={pathname === `/category/${category.slug}`}
-                >
-                  {category.name.toUpperCase()}
-                </HeaderLink>
-              ))}
-              <Link href="/login" className="px-3 py-2 text-sm font-condensed font-bold uppercase tracking-widest text-secondary-light hover:text-white">
+              {categories.map((category) => {
+                const hasChildren = category.children && category.children.length > 0;
+                const isExpanded = expandedMobileCategory === category.id;
+
+                return (
+                  <div key={category.id}>
+                    <div className="flex items-center">
+                      <Link
+                        href={`/category/${category.slug}`}
+                        className={`flex-1 px-3 py-2.5 text-sm font-condensed font-bold uppercase tracking-widest transition-colors border-b border-secondary-dark/50 ${
+                          pathname === `/category/${category.slug}`
+                            ? "text-white"
+                            : "text-secondary-light hover:text-white"
+                        }`}
+                      >
+                        {category.name}
+                      </Link>
+                      {hasChildren && (
+                        <button
+                          onClick={() => setExpandedMobileCategory(isExpanded ? null : category.id)}
+                          className="px-3 py-2.5 text-secondary-light hover:text-white border-b border-secondary-dark/50"
+                          aria-label={isExpanded ? "Collapse" : "Expand"}
+                        >
+                          <ChevronRight
+                            size={16}
+                            className={`transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
+                          />
+                        </button>
+                      )}
+                    </div>
+                    {/* Mobile subcategories */}
+                    {hasChildren && isExpanded && (
+                      <div className="bg-secondary-dark/40">
+                        {category.children!.map((child) => (
+                          <Link
+                            key={child.id}
+                            href={`/category/${child.slug}`}
+                            className={`block pl-8 pr-3 py-2.5 text-sm font-condensed tracking-wide border-b border-secondary-dark/30 transition-colors ${
+                              pathname === `/category/${child.slug}`
+                                ? "text-white font-bold"
+                                : "text-secondary-light hover:text-white"
+                            }`}
+                          >
+                            {child.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              <Link href="/login" className="px-3 py-2.5 text-sm font-condensed font-bold uppercase tracking-widest text-secondary-light hover:text-white border-b border-secondary-dark/50">
                 LOGIN OR SIGNUP
               </Link>
             </nav>
@@ -180,6 +237,52 @@ export default function SiteHeaderClient({
         </div>
       )}
     </header>
+  );
+}
+
+// Desktop dropdown nav item
+function DropdownNavItem({
+  category,
+  pathname,
+}: {
+  category: Category;
+  pathname: string;
+}) {
+  const isActive =
+    pathname === `/category/${category.slug}` ||
+    category.children?.some((c) => pathname === `/category/${c.slug}`);
+
+  return (
+    <div className="relative h-full flex items-center group">
+      <Link
+        href={`/category/${category.slug}`}
+        className={`h-full flex items-center gap-1 px-4 text-xs font-condensed font-bold tracking-widest uppercase transition-colors whitespace-nowrap ${
+          isActive
+            ? "bg-secondary-dark text-white"
+            : "text-secondary-light hover:bg-secondary-dark hover:text-white"
+        }`}
+      >
+        {category.name.toUpperCase()}
+        <ChevronRight size={12} className="rotate-90 opacity-60" />
+      </Link>
+
+      {/* Dropdown panel */}
+      <div className="absolute top-full left-0 z-50 hidden group-hover:block min-w-[200px] bg-white border border-gray-200 shadow-xl">
+        {category.children!.map((child) => (
+          <Link
+            key={child.id}
+            href={`/category/${child.slug}`}
+            className={`block px-5 py-3 text-sm font-medium border-b border-gray-100 last:border-0 transition-colors ${
+              pathname === `/category/${child.slug}`
+                ? "bg-red-50 text-red-700 font-semibold"
+                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+            }`}
+          >
+            {child.name}
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }
 

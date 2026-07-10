@@ -14,8 +14,9 @@ const updateCategorySchema = z
   .object({
     name: requiredTrimmedString("Category name is required").optional(),
     slug: requiredSlugString("Category slug is required").optional(),
+    parentId: z.string().nullable().optional(),
   })
-  .refine((value) => value.name !== undefined || value.slug !== undefined, {
+  .refine((value) => value.name !== undefined || value.slug !== undefined || value.parentId !== undefined, {
     message: "No fields provided for update",
   });
 
@@ -28,8 +29,8 @@ export const PATCH = withApiHandler(
     await requirePermission("category.update");
 
     const { id: categoryId } = parseInput(params, routeParamsSchema);
-    const { name, slug } = await parseJsonBody(req, updateCategorySchema);
-    const updated = await categoryService.updateCategory(categoryId, { name, slug });
+    const { name, slug, parentId } = await parseJsonBody(req, updateCategorySchema);
+    const updated = await categoryService.updateCategory(categoryId, { name, slug, parentId });
 
     return apiSuccess(updated);
   }

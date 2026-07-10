@@ -7,8 +7,17 @@ import { prisma } from "@/lib/prisma";
  */
 export const getCachedCategories = cache(async () => {
   return prisma.category.findMany({
-    orderBy: { name: "asc" },
-    take: 10,
-    select: { id: true, name: true, slug: true },
+    where: { parentId: null },
+    orderBy: { order: "asc" },
+    take: 12,
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      children: {
+        select: { id: true, name: true, slug: true },
+        orderBy: { name: "asc" },
+      },
+    },
   });
 });

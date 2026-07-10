@@ -25,9 +25,10 @@ export default async function AdminCategoriesPage() {
         select: { articles: true },
       },
     },
-    orderBy: {
-      name: "asc",
-    },
+    orderBy: [
+      { parentId: "asc" },
+      { name: "asc" },
+    ],
   });
 
   return (

@@ -9,6 +9,7 @@ import { requirePermission } from "@/lib/permissions/guard";
 const createCategorySchema = z.object({
   name: requiredTrimmedString("Category name is required"),
   slug: requiredSlugString("Category slug is required"),
+  parentId: z.string().optional().nullable(),
 });
 
 const categoryService = new CategoryService(new CategoryRepository());
@@ -26,8 +27,8 @@ export const GET = withApiHandler({ scope: "api/admin/categories:get" }, async (
 export const POST = withApiHandler({ scope: "api/admin/categories:create" }, async (req) => {
   await requirePermission("category.create");
 
-  const { name, slug } = await parseJsonBody(req, createCategorySchema);
-  const category = await categoryService.createCategory({ name, slug });
+  const { name, slug, parentId } = await parseJsonBody(req, createCategorySchema);
+  const category = await categoryService.createCategory({ name, slug, parentId: parentId ?? undefined });
 
   return apiSuccess(category, { status: 201 });
 });
