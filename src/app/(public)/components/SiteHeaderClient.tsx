@@ -20,6 +20,7 @@ export default function SiteHeaderClient({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const { data: session, status } = useSession();
 
   return (
@@ -77,10 +78,15 @@ export default function SiteHeaderClient({
             </form>
             {status === "authenticated" && session?.user ? (
               <Link href="/login" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                {session.user.image ? (
+                {session.user.image && !imgError ? (
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={session.user.image} alt="Profile" className="h-8 w-8 rounded-full border border-primary-light object-cover" />
+                    <img 
+                      src={session.user.image} 
+                      alt="Profile" 
+                      className="h-8 w-8 rounded-full border border-primary-light object-cover" 
+                      onError={() => setImgError(true)}
+                    />
                   </>
                 ) : (
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-light text-primary font-bold">
