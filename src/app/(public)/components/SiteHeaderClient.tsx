@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, Search, X, ChevronRight } from "lucide-react";
+import { Menu, Search, X, ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 
@@ -38,21 +38,25 @@ export default function SiteHeaderClient({
     }
   }, [session?.user?.image]);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setOpen(false);
     setExpandedMobileCategory(null);
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-structural shadow-sm font-sans">
-      {/* Super Top Bar - Date & Social */}
-      <div className="bg-secondary-dark text-secondary-light border-b border-secondary hidden md:block">
-        <div className="max-w-[1280px] mx-auto px-4 h-8 flex items-center justify-between text-[11px] font-condensed tracking-widest uppercase font-bold">
+    <header className="sticky top-0 z-50 bg-white shadow-sm font-sans">
+      {/* Super Top Bar */}
+      <div className="bg-[#8b0000] text-white/80 hidden md:block">
+        <div className="max-w-[1280px] mx-auto px-4 h-8 flex items-center justify-between text-[11px] tracking-wider uppercase font-medium">
           <div>
-            {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            {new Date().toLocaleDateString("en-IN", {
+              weekday: "short",
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-5 items-center">
             <Link href="#" className="hover:text-white transition">Facebook</Link>
             <Link href="#" className="hover:text-white transition">Twitter</Link>
             <Link href="#" className="hover:text-white transition">YouTube</Link>
@@ -60,41 +64,40 @@ export default function SiteHeaderClient({
         </div>
       </div>
 
-      {/* Top Bar - Branding & Search */}
-      <div className="bg-primary text-white">
-        <div className="max-w-[1280px] mx-auto px-4 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
+      {/* Branding Bar */}
+      <div className="border-b border-gray-200">
+        <div className="max-w-[1280px] mx-auto px-4 h-[68px] flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3 group">
             <Image
               src="/logo.png"
               alt="Khabar 24 Times Logo"
-              width={60}
-              height={60}
-              className="logo-spin rounded-full w-10 h-10 sm:w-[50px] sm:h-[50px] md:w-[60px] md:h-[60px]"
+              width={54}
+              height={54}
+              className="rounded-full w-10 h-10 sm:w-[48px] sm:h-[48px]"
               priority
             />
-            <div className="flex flex-col items-start leading-none">
-              <span className="hidden sm:flex text-[10px] font-condensed font-bold tracking-widest text-primary-light uppercase mb-1 items-center">
-                <span className="logo-live-dot" aria-hidden="true" />
-                The Daily Truth
-              </span>
-              <span className="text-xl sm:text-2xl md:text-4xl font-serif font-black tracking-tight logo-text flex items-center">
+            <div className="flex flex-col leading-none">
+              <span className="hidden sm:block text-[10px] tracking-widest uppercase text-gray-500 mb-0.5">The Daily Truth</span>
+              <span className="text-xl sm:text-2xl md:text-[28px] font-black tracking-tight text-[#8b0000] flex items-center">
                 Khabar
-                <span className="text-3xl sm:text-4xl md:text-5xl text-primary bg-white px-1.5 sm:px-2 py-0.5 mx-1.5 sm:mx-2 rounded-sm transform -skew-x-12 inline-block leading-none shadow-md font-sans font-black">24</span>
+                <span className="text-[#8b0000] bg-[#fff0f0] border border-[#f5c6c6] px-1.5 mx-1.5 rounded font-black text-2xl md:text-3xl">24</span>
                 Times
               </span>
             </div>
           </Link>
-          
-          <div className="hidden md:flex items-center gap-6">
+
+          {/* Search + User (Desktop) */}
+          <div className="hidden md:flex items-center gap-4">
             <form action="/search" method="get" className="relative">
-              <input 
-                type="search" 
-                name="q" 
-                placeholder="Search news..." 
-                className="bg-primary-dark text-white placeholder-primary-light/70 px-4 py-2 rounded-sm border border-primary-dark focus:border-white focus:outline-none text-sm transition-colors w-64"
+              <input
+                type="search"
+                name="q"
+                placeholder="Search news..."
+                className="bg-gray-50 text-gray-800 placeholder-gray-400 px-4 py-2 rounded-full border border-gray-200 focus:border-[#8b0000] focus:outline-none focus:ring-2 focus:ring-[#8b0000]/10 text-sm transition-all w-56"
               />
-              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-light hover:text-white">
-                <Search size={16} />
+              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#8b0000]">
+                <Search size={15} />
               </button>
             </form>
             {status === "authenticated" && session?.user ? (
@@ -102,145 +105,190 @@ export default function SiteHeaderClient({
                 {session.user.image && !imgError ? (
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
+                    <img
                       ref={imgRef}
-                      src={session.user.image} 
-                      alt="Profile" 
-                      className="h-8 w-8 rounded-full border border-primary-light object-cover" 
+                      src={session.user.image}
+                      alt="Profile"
+                      className="h-8 w-8 rounded-full border-2 border-[#8b0000]/20 object-cover"
                       onError={() => setImgError(true)}
                     />
                   </>
                 ) : (
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-light text-primary font-bold">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8b0000] text-white font-bold text-sm">
                     {session.user.name?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || "U"}
                   </div>
                 )}
-                <span className="text-sm font-semibold whitespace-nowrap">{session.user.name?.split(" ")[0] || "Profile"}</span>
+                <span className="text-sm font-semibold text-gray-700">{session.user.name?.split(" ")[0] || "Profile"}</span>
               </Link>
             ) : (
-              <Link href="/login" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-light text-primary">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-                  </svg>
-                </div>
-                <span className="text-sm font-semibold whitespace-nowrap">Login or Signup</span>
+              <Link
+                href="/login"
+                className="flex items-center gap-1.5 text-sm font-semibold text-[#8b0000] hover:bg-[#fff0f0] px-3 py-1.5 rounded-full border border-[#8b0000]/20 transition-colors"
+              >
+                Login
               </Link>
             )}
           </div>
 
+          {/* Mobile hamburger */}
           <button
             type="button"
-            onClick={() => setOpen((value) => !value)}
-            className="md:hidden text-white hover:text-primary-light transition-colors"
+            onClick={() => setOpen((v) => !v)}
+            className="md:hidden text-[#8b0000] hover:bg-[#fff0f0] p-2 rounded-full transition-colors"
           >
-            {open ? <X size={28} /> : <Menu size={28} />}
+            {open ? <X size={26} /> : <Menu size={26} />}
           </button>
         </div>
       </div>
 
-      {/* Main Navigation (Desktop) */}
-      <div className="hidden md:block bg-secondary text-white">
-        <div className="max-w-[1280px] mx-auto px-4 h-12 flex items-center justify-between">
-          <nav className="flex items-center h-full space-x-1 overflow-x-auto scrollbar-hide">
-            <HeaderLink href="/" active={pathname === "/"}>HOME</HeaderLink>
+      {/* ── Desktop Category Nav Bar ── */}
+      <div className="hidden md:block bg-white border-b border-gray-200">
+        <div className="max-w-[1280px] mx-auto px-4">
+          <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide" style={{ height: "48px" }}>
+            {/* HOME pill */}
+            <NavPill href="/" active={pathname === "/"}>
+              होम / Home
+            </NavPill>
+
             {categories.map((category) =>
               category.children && category.children.length > 0 ? (
                 <DropdownNavItem key={category.id} category={category} pathname={pathname} />
               ) : (
-                <HeaderLink
+                <NavPill
                   key={category.id}
                   href={`/category/${category.slug}`}
                   active={pathname === `/category/${category.slug}`}
                 >
-                  {category.name.toUpperCase()}
-                </HeaderLink>
+                  {category.name}
+                </NavPill>
               )
             )}
           </nav>
         </div>
       </div>
 
-      {/* Mobile Navigation Dropdown */}
+      {/* ── Mobile Nav Drawer ── */}
       {open && (
-        <div className="md:hidden bg-secondary text-white border-t border-secondary-dark">
-          <div className="p-4 space-y-4">
+        <div className="md:hidden absolute left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
+          {/* Mobile Search */}
+          <div className="px-4 pt-3 pb-2 border-b border-gray-100">
             <form action="/search" method="get" className="relative">
-              <input 
-                type="search" 
-                name="q" 
-                placeholder="Search news..." 
-                className="w-full bg-secondary-dark text-white placeholder-secondary-light/70 px-4 py-2 border border-secondary-dark focus:border-white focus:outline-none text-sm"
+              <input
+                type="search"
+                name="q"
+                placeholder="Search news..."
+                className="w-full bg-gray-50 text-gray-800 placeholder-gray-400 px-4 py-2.5 rounded-full border border-gray-200 focus:border-[#8b0000] focus:outline-none text-sm"
               />
-              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-light">
-                <Search size={18} />
+              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <Search size={16} />
               </button>
             </form>
-            <nav className="flex flex-col">
-              <HeaderLink href="/" active={pathname === "/"}>HOME</HeaderLink>
-              {categories.map((category) => {
-                const hasChildren = category.children && category.children.length > 0;
-                const isExpanded = expandedMobileCategory === category.id;
+          </div>
 
-                return (
-                  <div key={category.id}>
-                    <div className="flex items-center">
-                      <Link
-                        href={`/category/${category.slug}`}
-                        className={`flex-1 px-3 py-2.5 text-sm font-condensed font-bold uppercase tracking-widest transition-colors border-b border-secondary-dark/50 ${
-                          pathname === `/category/${category.slug}`
-                            ? "text-white"
-                            : "text-secondary-light hover:text-white"
-                        }`}
+          {/* Mobile Category List */}
+          <nav className="max-h-[70vh] overflow-y-auto">
+            <Link
+              href="/"
+              className={`flex items-center px-5 py-3.5 text-sm font-semibold border-b border-gray-100 transition-colors ${
+                pathname === "/" ? "text-[#8b0000] bg-[#fff5f5]" : "text-gray-700 hover:bg-gray-50 hover:text-[#8b0000]"
+              }`}
+            >
+              होम / Home
+            </Link>
+
+            {categories.map((category) => {
+              const hasChildren = category.children && category.children.length > 0;
+              const isExpanded = expandedMobileCategory === category.id;
+              const isActive =
+                pathname === `/category/${category.slug}` ||
+                category.children?.some((c) => pathname === `/category/${c.slug}`);
+
+              return (
+                <div key={category.id}>
+                  <div className="flex items-center border-b border-gray-100">
+                    <Link
+                      href={`/category/${category.slug}`}
+                      className={`flex-1 px-5 py-3.5 text-sm font-semibold transition-colors ${
+                        isActive ? "text-[#8b0000] bg-[#fff5f5]" : "text-gray-700 hover:bg-gray-50 hover:text-[#8b0000]"
+                      }`}
+                    >
+                      {category.name}
+                    </Link>
+                    {hasChildren && (
+                      <button
+                        onClick={() => setExpandedMobileCategory(isExpanded ? null : category.id)}
+                        className="px-4 py-3.5 text-[#8b0000] hover:bg-[#fff5f5] transition-colors"
                       >
-                        {category.name}
-                      </Link>
-                      {hasChildren && (
-                        <button
-                          onClick={() => setExpandedMobileCategory(isExpanded ? null : category.id)}
-                          className="px-3 py-2.5 text-secondary-light hover:text-white border-b border-secondary-dark/50"
-                          aria-label={isExpanded ? "Collapse" : "Expand"}
-                        >
-                          <ChevronRight
-                            size={16}
-                            className={`transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
-                          />
-                        </button>
-                      )}
-                    </div>
-                    {/* Mobile subcategories */}
-                    {hasChildren && isExpanded && (
-                      <div className="bg-secondary-dark/40">
-                        {category.children!.map((child) => (
-                          <Link
-                            key={child.id}
-                            href={`/category/${child.slug}`}
-                            className={`block pl-8 pr-3 py-2.5 text-sm font-condensed tracking-wide border-b border-secondary-dark/30 transition-colors ${
-                              pathname === `/category/${child.slug}`
-                                ? "text-white font-bold"
-                                : "text-secondary-light hover:text-white"
-                            }`}
-                          >
-                            {child.name}
-                          </Link>
-                        ))}
-                      </div>
+                        <ChevronRight
+                          size={18}
+                          className={`transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
+                        />
+                      </button>
                     )}
                   </div>
-                );
-              })}
-              <Link href="/login" className="px-3 py-2.5 text-sm font-condensed font-bold uppercase tracking-widest text-secondary-light hover:text-white border-b border-secondary-dark/50">
-                LOGIN OR SIGNUP
-              </Link>
-            </nav>
-          </div>
+
+                  {/* Mobile subcategories */}
+                  {hasChildren && isExpanded && (
+                    <div className="bg-[#fff9f9]">
+                      {category.children!.map((child) => (
+                        <Link
+                          key={child.id}
+                          href={`/category/${child.slug}`}
+                          className={`flex items-center gap-2 pl-10 pr-5 py-3 text-sm border-b border-[#f5e5e5] transition-colors ${
+                            pathname === `/category/${child.slug}`
+                              ? "text-[#8b0000] font-semibold bg-[#fff0f0]"
+                              : "text-gray-600 hover:text-[#8b0000] hover:bg-[#fff0f0]"
+                          }`}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#8b0000]/40 shrink-0" />
+                          {child.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Login link */}
+            <Link
+              href="/login"
+              className="flex items-center px-5 py-3.5 text-sm font-semibold text-[#8b0000] border-b border-gray-100 hover:bg-[#fff5f5] transition-colors"
+            >
+              Login / Sign Up
+            </Link>
+          </nav>
         </div>
       )}
     </header>
   );
 }
 
-// Desktop dropdown nav item
+// ── Desktop: plain pill link ──
+function NavPill({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`flex items-center whitespace-nowrap px-4 py-1.5 rounded-full text-[13px] font-semibold transition-all ${
+        active
+          ? "bg-[#8b0000] text-white shadow-sm"
+          : "text-gray-600 hover:text-[#8b0000] hover:bg-[#fff0f0]"
+      }`}
+    >
+      {children}
+    </Link>
+  );
+}
+
+// ── Desktop: pill with hover dropdown ──
 function DropdownNavItem({
   category,
   pathname,
@@ -253,58 +301,50 @@ function DropdownNavItem({
     category.children?.some((c) => pathname === `/category/${c.slug}`);
 
   return (
-    <div className="relative h-full flex items-center group">
+    <div className="relative flex items-center group h-full">
       <Link
         href={`/category/${category.slug}`}
-        className={`h-full flex items-center gap-1 px-4 text-xs font-condensed font-bold tracking-widest uppercase transition-colors whitespace-nowrap ${
+        className={`flex items-center gap-1 whitespace-nowrap px-4 py-1.5 rounded-full text-[13px] font-semibold transition-all ${
           isActive
-            ? "bg-secondary-dark text-white"
-            : "text-secondary-light hover:bg-secondary-dark hover:text-white"
+            ? "bg-[#8b0000] text-white shadow-sm"
+            : "text-gray-600 hover:text-[#8b0000] hover:bg-[#fff0f0]"
         }`}
       >
-        {category.name.toUpperCase()}
-        <ChevronRight size={12} className="rotate-90 opacity-60" />
+        {category.name}
+        <ChevronDown
+          size={13}
+          className={`transition-transform duration-200 group-hover:rotate-180 ${isActive ? "text-white" : "text-gray-400"}`}
+        />
       </Link>
 
-      {/* Dropdown panel */}
-      <div className="absolute top-full left-0 z-50 hidden group-hover:block min-w-[200px] bg-white border border-gray-200 shadow-xl">
-        {category.children!.map((child) => (
+      {/* Dropdown */}
+      <div className="absolute top-[calc(100%+6px)] left-0 z-50 hidden group-hover:block min-w-[200px] bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+        {/* Arrow tip */}
+        <div className="absolute -top-2 left-6 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45" />
+        <div className="relative">
+          {/* Category header link */}
           <Link
-            key={child.id}
-            href={`/category/${child.slug}`}
-            className={`block px-5 py-3 text-sm font-medium border-b border-gray-100 last:border-0 transition-colors ${
-              pathname === `/category/${child.slug}`
-                ? "bg-red-50 text-red-700 font-semibold"
-                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-            }`}
+            href={`/category/${category.slug}`}
+            className="block px-4 py-2.5 text-xs font-bold text-[#8b0000] uppercase tracking-wider bg-[#fff5f5] border-b border-gray-100"
           >
-            {child.name}
+            All {category.name} →
           </Link>
-        ))}
+          {category.children!.map((child) => (
+            <Link
+              key={child.id}
+              href={`/category/${child.slug}`}
+              className={`flex items-center gap-2.5 px-4 py-3 text-sm border-b border-gray-50 last:border-0 transition-colors ${
+                pathname === `/category/${child.slug}`
+                  ? "bg-[#fff0f0] text-[#8b0000] font-semibold"
+                  : "text-gray-700 hover:bg-[#fff5f5] hover:text-[#8b0000]"
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#8b0000]/50 shrink-0" />
+              {child.name}
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
-  );
-}
-
-function HeaderLink({
-  href,
-  active,
-  children,
-}: {
-  href: string;
-  active: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`h-full flex items-center px-4 text-xs font-condensed font-bold tracking-widest uppercase transition-colors whitespace-nowrap ${
-        active
-          ? "bg-secondary-dark text-white"
-          : "text-secondary-light hover:bg-secondary-dark hover:text-white"
-      }`}
-    >
-      {children}
-    </Link>
   );
 }
