@@ -81,7 +81,7 @@ export default function HomepageBuilder({ initialArticles }: { initialArticles: 
               <div className="mt-3">
                 {featured[0].coverImageUrl ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
-                  <img src={featured[0].coverImageUrl} alt="Cover" className="w-full h-28 object-cover rounded-lg mb-2" />
+                  <img src={featured[0].coverImageUrl.startsWith('http') || featured[0].coverImageUrl.startsWith('/') ? featured[0].coverImageUrl : '/' + featured[0].coverImageUrl} alt="Cover" className="w-full h-28 object-cover rounded-lg mb-2" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                 ) : (
                   <div className="w-full h-28 bg-slate-100 dark:bg-slate-900 rounded-lg mb-2 flex items-center justify-center text-slate-400 text-xs">No Cover</div>
                 )}
