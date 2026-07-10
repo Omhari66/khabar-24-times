@@ -70,9 +70,10 @@ interface ArticleFormProps {
     coverImageUrl?: string | null;
     categoryId: string;
     status: string;
+    editorBrief?: { angle?: string; checklist?: string[] } | null;
   };
   categories: Category[];
-  mode?: "reporter" | "editor";
+  mode?: "reporter" | "editor" | "admin";
 }
 
 const OPENING_ANGLES = [
@@ -91,11 +92,12 @@ const REPORTER_CHECKLIST = [
 
 function createSlug(value: string) {
   return value
-    .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/[\s-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/[\s_]+/g, "-")
+    .replace(/[^\p{L}\p{N}\-]/gu, "")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
 }
 
 function extractPlainText(content: unknown): string {
@@ -139,10 +141,13 @@ export default function ArticleForm({
   const [isSubmitting, setIsSubmitting] = useState<"DRAFT" | "PENDING" | null>(null);
   const [error, setError] = useState("");
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(!!initialData);
-  const [isActioning, setIsActioning] = useState<"save" | "publish" | "reject" | null>(null);
+  const [isActioning, setIsActioning] = useState<"save" | "publish" | "reject" | "admin-save" | null>(null);
   const [isRejecting, setIsRejecting] = useState(false);
   const [rejectionNote, setRejectionNote] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [editorBrief, setEditorBrief] = useState<{ angle?: string; checklist?: string[] }>(
+    initialData?.editorBrief || { angle: "", checklist: [] }
+  );
 
   const editor = useEditor({
     extensions: [
@@ -161,10 +166,9 @@ export default function ArticleForm({
       Superscript,
       Subscript,
       Youtube.configure({
-        width: 640,
-        height: 480,
+        inline: false,
         HTMLAttributes: {
-          class: "w-full aspect-video rounded-xl border border-slate-200",
+          class: "w-full aspect-video rounded-xl",
         },
       }),
       TiptapImage.configure({
@@ -299,6 +303,7 @@ export default function ArticleForm({
           coverImageUrl: coverImageUrl || null,
           categoryId,
           status: targetStatus,
+          editorBrief,
         }),
       });
 
@@ -340,6 +345,46 @@ export default function ArticleForm({
           content: editor.getJSON(),
           coverImageUrl: coverImageUrl || null,
           categoryId,
+          editorBrief,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json();
+        throw new Error(payload.error || "Failed to save changes");
+      }
+
+      setSaveSuccess(true);
+      window.setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Failed to save changes");
+    } finally {
+      setIsActioning(null);
+    }
+  };
+
+  // Admin-specific: save changes while keeping the article PUBLISHED
+  const handleAdminSave = async () => {
+    if (!initialData) return;
+    if (!title.trim()) return setError("Title is required");
+    if (!slug.trim()) return setError("Slug is required");
+    if (!categoryId) return setError("Please select a category");
+    if (!editor || editor.isEmpty) return setError("Article content cannot be empty");
+
+    setIsActioning("admin-save");
+    setError("");
+
+    try {
+      const response = await fetch(`/api/articles/${initialData.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(),
+          slug: slug.trim(),
+          content: editor.getJSON(),
+          coverImageUrl: coverImageUrl || null,
+          categoryId,
+          // Explicitly keep PUBLISHED — do NOT change status
         }),
       });
 
@@ -456,9 +501,9 @@ export default function ArticleForm({
     }
   };
 
-  const addInlineImage = () => {
+  const addImage = () => {
     if (!editor) return;
-    const url = window.prompt("Enter Image URL:");
+    const url = window.prompt("Enter image URL:");
     if (url) {
       editor.commands.setImage({ src: url });
     }
@@ -637,7 +682,7 @@ export default function ArticleForm({
                   <div className="w-px h-6 bg-slate-200 mx-1 self-center" />
 
                   {/* Headings */}
-                  <ToolbarButton active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} title="Heading 1 (Ctrl+Alt+1)">
+                  <ToolbarButton active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1, }).run()} title="Heading 1 (Ctrl+Alt+1)">
                     <Heading1 size={16} />
                   </ToolbarButton>
                   <ToolbarButton active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} title="Heading 2 (Ctrl+Alt+2)">
@@ -695,10 +740,10 @@ export default function ArticleForm({
                   <ToolbarButton active={editor.isActive("link")} onClick={setLink} title="Add link">
                     <LinkIcon size={16} />
                   </ToolbarButton>
-                  <ToolbarButton active={false} onClick={() => editor.chain().focus().unsetLink().run()} title="Remove link">
+                  <ToolbarButton active={editor.isActive("link")} onClick={() => editor.chain().focus().unsetLink().run()} title="Remove Link">
                     <Unlink size={16} />
                   </ToolbarButton>
-                  <ToolbarButton active={editor.isActive("image")} onClick={addInlineImage} title="Insert Image">
+                  <ToolbarButton active={editor.isActive("image")} onClick={addImage} title="Insert Image">
                     <ImagePlus size={16} />
                   </ToolbarButton>
                   <ToolbarButton active={editor.isActive("youtube")} onClick={addYoutubeVideo} title="Insert YouTube Video">
@@ -708,10 +753,10 @@ export default function ArticleForm({
                   <div className="w-px h-6 bg-slate-200 mx-1 self-center" />
 
                   {/* History */}
-                  <ToolbarButton active={false} onClick={() => editor.chain().focus().undo().run()} title="Undo (Ctrl+Z)">
+                  <ToolbarButton active={false} onClick={() => editor.chain().focus().undo().run()} title="Undo">
                     <Undo size={16} />
                   </ToolbarButton>
-                  <ToolbarButton active={false} onClick={() => editor.chain().focus().redo().run()} title="Redo (Ctrl+Y)">
+                  <ToolbarButton active={false} onClick={() => editor.chain().focus().redo().run()} title="Redo">
                     <Redo size={16} />
                   </ToolbarButton>
                 </div>
@@ -720,7 +765,37 @@ export default function ArticleForm({
             </div>
           </div>
 
-          {mode === "editor" ? (
+          {mode === "admin" ? (
+            // Admin editing a published article
+            <div className="space-y-4 border-t border-slate-200 pt-6">
+              {saveSuccess && (
+                <div className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                  <CheckCircle2 size={16} />
+                  Article updated and remains published live.
+                </div>
+              )}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Link
+                  href="/dashboard/editor"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
+                >
+                  <ArrowLeft size={15} />
+                  Back to editor dashboard
+                </Link>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={handleAdminSave}
+                    disabled={isActioning !== null || isUploading}
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-700 hover:bg-emerald-800 px-6 py-3 text-sm font-semibold text-white transition shadow-md shadow-emerald-500/20 disabled:opacity-50"
+                  >
+                    {isActioning === "admin-save" ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                    Save &amp; Keep Published
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : mode === "editor" ? (
             <div className="space-y-4 border-t border-slate-200 pt-6">
               {isRejecting && (
                 <div className="rounded-[24px] border border-rose-200 bg-rose-50 p-4">
@@ -872,37 +947,74 @@ export default function ArticleForm({
           </div>
         </div>
 
-        {mode === "reporter" && (
-          <>
-            <div className="glass-panel rounded-[30px] border border-white/70 p-6">
-              <h3 className="text-lg font-black text-slate-950">Opening ideas</h3>
-              <div className="mt-4 space-y-3">
-                {OPENING_ANGLES.map((angle) => (
-                  <button
-                    key={angle}
-                    type="button"
-                    onClick={() => injectOpeningAngle(angle)}
-                    className="block w-full rounded-[22px] border border-slate-200 bg-white px-4 py-3 text-left text-sm leading-6 text-slate-700 transition hover:border-amber-300 hover:bg-amber-50"
-                  >
-                    {angle}
-                  </button>
-                ))}
+        <div className="glass-panel rounded-[30px] border border-white/70 p-6">
+          <h3 className="text-lg font-black text-slate-950">
+            {mode === "editor" ? "Assign Editor Brief" : editorBrief.angle ? "Editor's Brief" : "Opening ideas"}
+          </h3>
+          <div className="mt-4 space-y-4">
+            <div>
+              {mode === "editor" && <p className="text-sm font-semibold text-slate-700 mb-2">Select Angle</p>}
+              <div className="space-y-2">
+                {OPENING_ANGLES.map((angle) => {
+                  const isSelected = editorBrief.angle === angle;
+                  if (mode === "reporter" && editorBrief.angle && !isSelected) return null;
+
+                  return (
+                    <button
+                      key={angle}
+                      type="button"
+                      onClick={() => {
+                        if (mode === "editor") {
+                          setEditorBrief({ ...editorBrief, angle: isSelected ? undefined : angle });
+                        } else {
+                          injectOpeningAngle(angle);
+                        }
+                      }}
+                      className={`block w-full rounded-[22px] border px-4 py-3 text-left text-sm leading-6 transition ${
+                        isSelected 
+                          ? 'border-amber-300 bg-amber-50 text-amber-900 font-medium shadow-sm' 
+                          : 'border-slate-200 bg-white text-slate-700 hover:border-amber-300 hover:bg-amber-50'
+                      }`}
+                    >
+                      {angle}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            <div className="glass-panel rounded-[30px] border border-white/70 p-6">
-              <h3 className="text-lg font-black text-slate-950">Editorial checklist</h3>
-              <ul className="mt-4 space-y-3">
-                {REPORTER_CHECKLIST.map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-sm leading-6 text-slate-700">
-                    <CheckCircle2 size={16} className="mt-1 shrink-0 text-emerald-700" />
-                    <span>{item}</span>
-                  </li>
-                ))}
+            <div>
+              <h3 className="text-lg font-black text-slate-950 mb-3 mt-6">Editorial checklist</h3>
+              <ul className={`space-y-3 ${mode === "editor" ? "rounded-[24px] border border-slate-200 bg-white p-5" : ""}`}>
+                {REPORTER_CHECKLIST.map((item) => {
+                  const isChecked = mode === "reporter" ? true : (editorBrief.checklist?.includes(item) || false);
+                  
+                  return (
+                    <li key={item} className="flex items-start gap-3 text-sm leading-6 text-slate-700">
+                      {mode === "editor" ? (
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            const newChecklist = (editorBrief.checklist?.includes(item))
+                              ? editorBrief.checklist?.filter(i => i !== item) || []
+                              : [...(editorBrief.checklist || []), item];
+                            setEditorBrief({ ...editorBrief, checklist: newChecklist });
+                          }}
+                          className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${isChecked ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-slate-50'}`}
+                        >
+                          {isChecked && <CheckCircle2 size={12} strokeWidth={3} />}
+                        </button>
+                      ) : (
+                        <CheckCircle2 size={16} className="mt-1 shrink-0 text-emerald-700" />
+                      )}
+                      <span className={mode === "editor" && !isChecked ? "opacity-60" : ""}>{item}</span>
+                    </li>
+                  )
+                })}
               </ul>
             </div>
-          </>
-        )}
+          </div>
+        </div>
       </aside>
     </div>
   );

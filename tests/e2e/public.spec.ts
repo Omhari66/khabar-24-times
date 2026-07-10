@@ -4,8 +4,8 @@ test.describe('Public Website Features', () => {
   test('should load homepage and display top headlines', async ({ page }) => {
     await page.goto('/');
     
-    // Expect the title to contain Bharat Sentinel
-    await expect(page).toHaveTitle(/Home \| Bharat Sentinel/i);
+    // Expect the title to contain Khabar 24 Times
+    await expect(page).toHaveTitle(/Home \| Khabar 24 Times/i);
     
     // Expect the hero section to be visible
     const heroSection = page.locator('section').first();

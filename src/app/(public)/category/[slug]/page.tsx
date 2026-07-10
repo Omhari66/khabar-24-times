@@ -23,7 +23,7 @@ export async function generateMetadata({
 
   return {
     title: `${category.name} News`,
-    description: `Latest news and updates on ${category.name} from Bharat Sentinel.`,
+    description: `Latest news and updates on ${category.name} from Khabar 24 Times.`,
   };
 }
 

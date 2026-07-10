@@ -11,10 +11,11 @@ import { Prisma } from "@prisma/client";
 const createArticleSchema = z.object({
   title: requiredTrimmedString("Title is required"),
   slug: requiredSlugString("Slug is required"),
-  content: z.any(),
+  content: z.any().optional(),
   coverImageUrl: z.string().nullable().optional(),
-  categoryId: z.string().min(1, "Category ID is required"),
-  status: z.enum(["DRAFT", "PENDING"]).default("DRAFT"),
+  categoryId: z.string().min(1, "Category is required"),
+  status: z.enum(["DRAFT", "PENDING", "PUBLISHED", "REJECTED"]).optional(),
+  editorBrief: z.any().optional(),
 });
 
 const articleService = new ArticleService(new ArticleRepository());

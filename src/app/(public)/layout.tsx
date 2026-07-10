@@ -1,5 +1,6 @@
 import SiteHeader from "./components/SiteHeader";
 import SiteFooter from "./components/SiteFooter";
+import { TrendingTagsTicker } from "./components/TrendingTagsTicker";
 
 export default function PublicLayout({
   children,
@@ -9,9 +10,9 @@ export default function PublicLayout({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "Bharat Sentinel",
-    "url": "https://www.bharatsentinel.in",
-    "logo": "https://www.bharatsentinel.in/logo.png"
+    "name": "Khabar 24 Times",
+    "url": "https://www.khabar24times.in",
+    "logo": "https://www.khabar24times.in/logo.png"
   };
 
   return (
@@ -21,6 +22,7 @@ export default function PublicLayout({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <SiteHeader />
+      <TrendingTagsTicker />
       <main className="flex-1">{children}</main>
       <SiteFooter />
     </div>

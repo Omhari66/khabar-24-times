@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Bharat Sentinel',
-    short_name: 'Sentinel',
+    name: 'Khabar 24 Times',
+    short_name: 'Khabar24',
     description: 'A high-velocity, professional Indian news portal.',
     start_url: '/',
     display: 'standalone',

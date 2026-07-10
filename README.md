@@ -1,4 +1,4 @@
-# Bharat Sentinel - Enterprise News Portal
+# Khabar 24 Times - Enterprise News Portal
 
 A modern, production-ready Indian news platform built on the Next.js 14 App Router, featuring a high-velocity CMS, robust editorial workflows, and enterprise-grade SEO and security.
 

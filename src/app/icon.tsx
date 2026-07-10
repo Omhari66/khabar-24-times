@@ -10,27 +10,68 @@ export const size = {
 };
 export const contentType = "image/png";
 
-// Image generation
+// Image generation — Khabar 24 Times favicon
 export default function Icon() {
   return new ImageResponse(
     (
-      // ImageResponse JSX element
       <div
         style={{
-          fontSize: 24,
-          background: "#2563eb", // blue-600
           width: "100%",
           height: "100%",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          color: "white",
-          borderRadius: "8px",
-          fontWeight: "bold",
-          fontFamily: "sans-serif",
+          background: "#CC0000", // brand red
+          borderRadius: "6px",
+          overflow: "hidden",
+          position: "relative",
         }}
       >
-        N
+        {/* Main K24 text */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            justifyContent: "center",
+            lineHeight: 1,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 18,
+              fontWeight: 900,
+              color: "#FFFFFF",
+              fontFamily: "serif",
+              letterSpacing: "-1px",
+            }}
+          >
+            K
+          </span>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 800,
+              color: "#FFD700",
+              fontFamily: "sans-serif",
+              letterSpacing: "0px",
+              marginLeft: "1px",
+            }}
+          >
+            24
+          </span>
+        </div>
+        {/* Bottom accent bar */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: "4px",
+            background: "#FFD700",
+          }}
+        />
       </div>
     ),
     {

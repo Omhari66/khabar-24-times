@@ -4,11 +4,13 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shield, KeyRound, Loader2, X, Trash2, AlertTriangle } from "lucide-react";
 
+import { Role } from "@prisma/client";
+
 type User = {
   id: string;
   name: string | null;
   email: string;
-  role: "REPORTER" | "EDITOR" | "ADMIN";
+  role: Role;
   _count: { articles: number };
 };
 
@@ -28,7 +30,7 @@ export default function UserTable({
   const [modalType, setModalType] = useState<"role" | "password" | "delete" | null>(null);
 
   // Form state
-  const [newRole, setNewRole] = useState<"REPORTER" | "EDITOR" | "ADMIN">("REPORTER");
+  const [newRole, setNewRole] = useState<Role>("REPORTER");
   const [newPassword, setNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -137,10 +139,11 @@ export default function UserTable({
     }
   };
 
-  const ROLE_COLORS = {
+  const ROLE_COLORS: Record<Role, string> = {
     ADMIN: "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/30 dark:text-fuchsia-400",
     EDITOR: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
     REPORTER: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    USER: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   };
 
   return (
@@ -317,9 +320,10 @@ export default function UserTable({
                       </label>
                       <select
                         value={newRole}
-                        onChange={(e) => setNewRole(e.target.value as "REPORTER" | "EDITOR" | "ADMIN")}
+                        onChange={(e) => setNewRole(e.target.value as Role)}
                         className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition-all"
                       >
+                        <option value="USER">USER</option>
                         <option value="REPORTER">REPORTER</option>
                         <option value="EDITOR">EDITOR</option>
                         <option value="ADMIN">ADMIN</option>

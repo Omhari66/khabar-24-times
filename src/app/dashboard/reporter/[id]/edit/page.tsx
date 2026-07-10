@@ -43,7 +43,8 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
     redirect("/dashboard/reporter");
   }
 
-  // Only DRAFT or REJECTED articles are editable by reporters
+  // Admins and editors can edit ANY article regardless of status
+  // Reporters can only edit DRAFT or REJECTED
   if (role === "REPORTER" && article.status !== "DRAFT" && article.status !== "REJECTED") {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 p-6 md:p-10 font-sans flex items-center justify-center">
@@ -70,6 +71,13 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
     );
   }
 
+  // Determine form mode:
+  // - Editors/Admins editing a published article → "admin" mode (save & keep published)
+  // - Editors/Admins editing pending/draft → "editor" mode
+  // - Reporters → "reporter" mode
+  const isEditorOrAdmin = role === "EDITOR" || role === "ADMIN";
+  const formMode = isEditorOrAdmin && article.status === "PUBLISHED" ? "admin" : isEditorOrAdmin ? "editor" : "reporter";
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 p-6 md:p-10 font-sans">
       <div className="max-w-5xl mx-auto">
@@ -89,16 +97,20 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
               article.status === "REJECTED"
                 ? "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-400 border-rose-200 dark:border-rose-800/40"
+                : article.status === "PUBLISHED"
+                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/40"
                 : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
             }`}>
-              {article.status === "REJECTED" ? "Revision Required" : "Draft"}
+              {article.status === "REJECTED" ? "Revision Required" : article.status === "PUBLISHED" ? "Live — Editing Published Article" : "Draft"}
             </span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
             Edit Article
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Make your changes and save as draft, or submit directly for editor review.
+            {article.status === "PUBLISHED"
+              ? "You are editing a live article. Changes will be saved and remain published."
+              : "Make your changes and save as draft, or submit directly for editor review."}
           </p>
         </div>
 
@@ -124,7 +136,7 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
             status: article.status,
           }}
           categories={categories}
-          mode="reporter"
+          mode={formMode}
         />
       </div>
     </div>

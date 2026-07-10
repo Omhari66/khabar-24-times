@@ -16,8 +16,8 @@ export async function generateMetadata({
   return {
     title: q ? `Search: ${q}` : "Search",
     description: q
-      ? `Search results for ${q} on Bharat Sentinel.`
-      : "Search Bharat Sentinel's published news.",
+      ? `Search results for ${q} on Khabar 24 Times.`
+      : "Search Khabar 24 Times's published news.",
   };
 }
 

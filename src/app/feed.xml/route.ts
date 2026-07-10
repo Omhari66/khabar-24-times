@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 3600;
 
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.bharatsentinel.in';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.khabar24times.in';
 
   const articles = await prisma.article.findMany({
     where: { status: 'PUBLISHED' },
@@ -40,7 +40,7 @@ export async function GET() {
   const rss = `<?xml version="1.0" encoding="UTF-8" ?>
   <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
-      <title>Bharat Sentinel</title>
+      <title>Khabar 24 Times</title>
       <link>${baseUrl}</link>
       <description>Reliable Indian News</description>
       <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml" />

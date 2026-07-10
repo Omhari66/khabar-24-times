@@ -14,6 +14,7 @@ import {
   Inbox,
   BarChart3,
   ShieldOff,
+  Edit2,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -252,7 +253,7 @@ export default async function EditorDashboard({ searchParams }: EditorDashboardP
                     </div>
                     <p className="text-sm font-semibold truncate">{article.title}</p>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 shrink-0">
                       Published
                     </span>
@@ -263,6 +264,12 @@ export default async function EditorDashboard({ searchParams }: EditorDashboardP
                       className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-medium text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 border border-slate-200 dark:border-slate-800 hover:border-blue-300 transition-colors"
                     >
                       View Live ↗
+                    </Link>
+                    <Link
+                      href={`/dashboard/reporter/${article.id}/edit`}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 border border-amber-200 dark:border-amber-800/40 transition-colors"
+                    >
+                      <Edit2 size={11} /> Edit
                     </Link>
                   </div>
                 </div>

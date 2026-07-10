@@ -7,6 +7,10 @@ import { prisma } from "@/lib/prisma";
 import ArticleCard from "../../components/ArticleCard";
 import ReaderActions from "../../components/ReaderActions";
 import TiptapRenderer, { extractPlainText } from "../../components/TiptapRenderer";
+import { ArticleSummaryBox } from "../../components/ArticleSummaryBox";
+import ArticleComments from "../../components/ArticleComments";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 60;
@@ -62,9 +66,26 @@ export async function generateMetadata({
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
+  const session = await getServerSession(authOptions);
+
   const article = await prisma.article.findFirst({
     where: { slug, status: "PUBLISHED" },
-    include: ARTICLE_INCLUDE,
+    include: {
+      ...ARTICLE_INCLUDE,
+      comments: {
+        orderBy: { createdAt: "desc" },
+        include: {
+          user: { select: { name: true, image: true } }
+        }
+      },
+      _count: {
+        select: { likes: true }
+      },
+      likes: session?.user?.id ? {
+        where: { userId: session.user.id },
+        select: { id: true }
+      } : false
+    },
   });
 
   if (!article) notFound();
@@ -103,7 +124,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     "dateModified": new Date(article.updatedAt).toISOString(),
     "author": [{
       "@type": "Person",
-      "name": article.author.name ?? "Bharat Sentinel Desk"
+      "name": article.author.name ?? "Khabar 24 Times Desk"
     }]
   };
 
@@ -138,7 +159,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-y border-structural">
               <div className="flex flex-col gap-1 text-sm font-sans text-text-secondary">
                 <span className="font-bold text-text-primary uppercase tracking-wide">
-                  By {article.author.name ?? "Bharat Sentinel Desk"}
+                  By {article.author.name ?? "Khabar 24 Times Desk"}
                 </span>
                 <div className="flex items-center gap-2 text-xs">
                   <span>Published: {formatDate(article.publishedAt)}</span>
@@ -146,7 +167,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   <span className="flex items-center gap-1"><Clock3 size={14}/> {readingTime(article.content)}</span>
                 </div>
               </div>
-              <ReaderActions slug={article.slug} title={article.title} />
+              <ReaderActions 
+                articleId={article.id}
+                slug={article.slug} 
+                title={article.title} 
+                initialLikesCount={article._count?.likes ?? 0}
+                initialIsLiked={article.likes && article.likes.length > 0}
+              />
             </div>
           </div>
 
@@ -162,22 +189,27 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
           )}
 
-          <div className="p-6 md:p-8 prose prose-lg prose-headings:font-serif prose-headings:font-bold prose-p:font-sans prose-p:text-text-primary max-w-none">
-            <TiptapRenderer content={article.content} />
-          </div>
-
-          {/* Comments Section (Static UI for now) */}
-          <div className="p-6 md:p-8 border-t border-structural bg-surface-muted/30">
-            <h3 className="text-xl font-condensed font-bold uppercase tracking-widest text-text-primary mb-6 flex items-center gap-2">
-              Join the Conversation <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">0</span>
-            </h3>
-            <div className="bg-white p-4 border border-structural">
-              <p className="text-sm text-text-secondary mb-3">You must be logged in to post a comment.</p>
-              <Link href="/login" className="inline-block border-2 border-primary text-primary px-4 py-2 text-xs font-condensed font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition">
-                Log in to Comment
-              </Link>
+          <div className="p-6 md:p-8">
+            <ArticleSummaryBox summary={article.summary} />
+            <div className="prose prose-lg prose-headings:font-serif prose-headings:font-bold prose-p:font-sans prose-p:text-text-primary max-w-none [&_iframe]:aspect-video [&_iframe]:w-full [&_iframe]:bg-black">
+              <TiptapRenderer content={article.content} />
             </div>
           </div>
+
+          {/* Comments Section */}
+          <ArticleComments 
+            articleId={article.id}
+            slug={article.slug}
+            comments={article.comments.map(c => ({
+              id: c.id,
+              content: c.content,
+              createdAt: c.createdAt,
+              user: {
+                name: c.user.name,
+                image: c.user.image,
+              }
+            }))}
+          />
         </article>
 
         {/* Right Sidebar (4 columns) */}

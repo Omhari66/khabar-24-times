@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clock3 } from "lucide-react";
 import { extractPlainText } from "./TiptapRenderer";
+import { getLabelColor } from "@/lib/constants/theme";
+import { ThumbnailPlaceholder } from "./ThumbnailPlaceholder";
 
 interface ArticleCardProps {
   title: string;
@@ -44,7 +46,7 @@ export default function ArticleCard({
       href={`/article/${slug}`}
       className="group flex flex-col sm:flex-row gap-4 border-b border-structural pb-5 last:border-0 last:pb-0"
     >
-      <div className="relative aspect-[4/3] sm:w-48 shrink-0 overflow-hidden bg-surface-muted rounded-sm">
+      <div className="relative aspect-[4/3] sm:w-48 shrink-0 overflow-hidden rounded border border-slate-100 bg-slate-50">
         {coverImageUrl ? (
           <Image
             src={coverImageUrl}
@@ -54,15 +56,15 @@ export default function ArticleCard({
             className="object-cover transition duration-300 group-hover:scale-105"
           />
         ) : (
-          <div className="h-full w-full bg-surface-border" />
+          <ThumbnailPlaceholder className="w-full h-full" />
         )}
       </div>
 
       <div className="flex flex-col flex-1 py-1">
-        <span className="text-primary font-condensed font-bold uppercase tracking-widest text-xs mb-1">
+        <span className={`text-[11px] md:text-[12px] font-bold uppercase mb-1.5 ${getLabelColor(category.name)}`}>
           {category.name}
         </span>
-        <h3 className="text-xl font-serif font-bold leading-snug text-text-primary transition group-hover:text-primary mb-2">
+        <h3 className="text-[16px] md:text-[18px] font-bold leading-snug text-slate-900 transition group-hover:text-blue-600 mb-2">
           {title}
         </h3>
         {!!content && (

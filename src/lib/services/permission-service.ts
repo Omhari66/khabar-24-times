@@ -9,6 +9,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<Role, PermissionName[]> = {
   REPORTER: [Permissions.UPLOAD_SIGNATURE_GENERATE],
   EDITOR: [Permissions.UPLOAD_SIGNATURE_GENERATE],
   ADMIN: Object.values(Permissions),
+  USER: [],
 };
 
 export class PermissionService extends ApplicationService {

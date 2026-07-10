@@ -1,5 +1,6 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
@@ -20,6 +21,10 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -68,15 +73,17 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        token.role = (user as any).role;
       }
 
-      if (token.id) {
+      if (token.email) {
         const dbUser = await prisma.user.findUnique({
-          where: { id: token.id },
-          select: { role: true },
+          where: { email: token.email },
+          select: { id: true, role: true },
         });
         if (dbUser) {
+          token.id = dbUser.id;
           token.role = dbUser.role;
         }
       }
@@ -92,18 +99,62 @@ export const authOptions: NextAuthOptions = {
     },
   },
   events: {
-    async signIn({ user }) {
-      const auditRepository = new AuditRepository();
-      const auditService = new AuditService(auditRepository);
-      await auditService.log({
-        action: "USER_LOGIN",
-        entityType: "User",
-        entityId: user.id,
-        status: "SUCCESS",
-        userId: user.id,
-        userRole: user.role,
-        newValue: { email: user.email, name: user.name },
-      });
+    async signIn({ user, account }) {
+      if (account?.provider === "google" && user.email) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email },
+        });
+
+        let finalUserId = user.id;
+        let finalUserRole = "USER";
+
+        if (!existingUser) {
+          const newUser = await prisma.user.create({
+            data: {
+              email: user.email,
+              name: user.name,
+              image: user.image,
+              role: "USER",
+            },
+          });
+          finalUserId = newUser.id;
+        } else {
+          finalUserId = existingUser.id;
+          finalUserRole = existingUser.role;
+          await prisma.user.update({
+            where: { id: existingUser.id },
+            data: {
+              name: user.name || existingUser.name,
+              image: user.image || existingUser.image,
+            },
+          });
+        }
+
+        const auditRepository = new AuditRepository();
+        const auditService = new AuditService(auditRepository);
+        await auditService.log({
+          action: "USER_LOGIN_OAUTH",
+          entityType: "User",
+          entityId: finalUserId,
+          status: "SUCCESS",
+          userId: finalUserId,
+          userRole: finalUserRole,
+          newValue: { email: user.email, name: user.name, provider: "google" },
+        });
+      } else if (account?.provider === "credentials") {
+        const auditRepository = new AuditRepository();
+        const auditService = new AuditService(auditRepository);
+        await auditService.log({
+          action: "USER_LOGIN",
+          entityType: "User",
+          entityId: user.id,
+          status: "SUCCESS",
+          userId: user.id,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          userRole: (user as any).role,
+          newValue: { email: user.email, name: user.name },
+        });
+      }
     },
   },
   pages: {

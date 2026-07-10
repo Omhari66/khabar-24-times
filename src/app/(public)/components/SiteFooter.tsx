@@ -1,12 +1,10 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import Image from "next/image";
+import { getCachedCategories } from "./getCachedCategories";
 import { Mail, MapPin, Phone } from "lucide-react";
 
 export default async function SiteFooter() {
-  const categories = await prisma.category.findMany({
-    orderBy: { name: "asc" },
-    take: 10,
-  });
+  const categories = await getCachedCategories();
 
   const year = new Date().getFullYear();
 
@@ -15,13 +13,25 @@ export default async function SiteFooter() {
       <div className="max-w-[1280px] mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
         {/* Brand Column */}
         <div className="space-y-6">
-          <div className="flex flex-col items-start leading-none">
-            <span className="text-[10px] font-condensed font-bold tracking-widest text-primary-light uppercase">
-              The Daily Truth
-            </span>
-            <span className="text-3xl font-serif font-black tracking-tight">
-              Bharat Sentinel
-            </span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Image
+              src="/logo.png"
+              alt="Khabar 24 Times Logo"
+              width={50}
+              height={50}
+              className="logo-spin rounded-full w-10 h-10 sm:w-[50px] sm:h-[50px]"
+            />
+            <div className="flex flex-col items-start leading-none">
+              <span className="hidden sm:flex text-[10px] font-condensed font-bold tracking-widest text-primary-light uppercase items-center mb-1">
+                <span className="logo-live-dot" aria-hidden="true" />
+                The Daily Truth
+              </span>
+              <span className="text-xl sm:text-3xl font-serif font-black tracking-tight logo-text flex items-center">
+                Khabar
+                <span className="text-3xl sm:text-4xl text-primary bg-white px-1.5 sm:px-2 py-0.5 mx-1.5 sm:mx-2 rounded-sm transform -skew-x-12 inline-block leading-none shadow-md font-sans font-black">24</span>
+                Times
+              </span>
+            </div>
           </div>
           <p className="text-secondary-light text-sm leading-relaxed max-w-xs">
             A high-velocity, professional Indian news portal delivering authoritative, urgent, and deeply rooted journalistic integrity.
@@ -37,14 +47,14 @@ export default async function SiteFooter() {
             </div>
             <div className="flex items-center gap-3">
               <Mail size={16} className="text-primary-light" />
-              <span>editor@bharatsentinel.in</span>
+              <span>editor@khabar24times.in</span>
             </div>
           </div>
         </div>
 
         {/* Sections */}
         <div>
-          <h3 className="text-lg font-condensed font-bold uppercase tracking-widest text-white mb-6 border-b border-secondary-light/20 pb-2">
+          <h3 className="text-lg font-condensed font-bold uppercase tracking-widest text-white mb-6 pb-2 border-b border-white/30 pl-3 border-l-4 border-l-primary">
             Sections
           </h3>
           <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
@@ -65,7 +75,7 @@ export default async function SiteFooter() {
 
         {/* Quick Links */}
         <div>
-          <h3 className="text-lg font-condensed font-bold uppercase tracking-widest text-white mb-6 border-b border-secondary-light/20 pb-2">
+          <h3 className="text-lg font-condensed font-bold uppercase tracking-widest text-white mb-6 pb-2 border-b border-white/30 pl-3 border-l-4 border-l-primary">
             Quick Links
           </h3>
           <ul className="space-y-3 text-sm">
@@ -79,7 +89,7 @@ export default async function SiteFooter() {
 
         {/* Newsletter */}
         <div>
-          <h3 className="text-lg font-condensed font-bold uppercase tracking-widest text-white mb-6 border-b border-secondary-light/20 pb-2">
+          <h3 className="text-lg font-condensed font-bold uppercase tracking-widest text-white mb-6 pb-2 border-b border-white/30 pl-3 border-l-4 border-l-primary">
             Newsletter
           </h3>
           <p className="text-secondary-light text-sm mb-4">
@@ -100,9 +110,9 @@ export default async function SiteFooter() {
 
       <div className="border-t border-secondary-dark bg-secondary-dark">
         <div className="max-w-[1280px] mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-secondary-light font-condensed tracking-wider uppercase">
-          <p>&copy; {year} Bharat Sentinel. Built on NewsPortal CMS.</p>
+          <p>&copy; {year} Khabar 24 Times. Built on NewsPortal CMS.</p>
           <Link href="/login" className="hover:text-white transition-colors">
-            Staff Login
+            Sign In
           </Link>
         </div>
       </div>

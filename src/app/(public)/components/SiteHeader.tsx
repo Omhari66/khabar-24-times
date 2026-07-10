@@ -1,11 +1,8 @@
-import { prisma } from "@/lib/prisma";
+import { getCachedCategories } from "./getCachedCategories";
 import SiteHeaderClient from "./SiteHeaderClient";
 
 export default async function SiteHeader() {
-  const categories = await prisma.category.findMany({
-    orderBy: { name: "asc" },
-    take: 10,
-  });
+  const categories = await getCachedCategories();
 
   return <SiteHeaderClient categories={categories} />;
 }

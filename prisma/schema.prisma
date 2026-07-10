@@ -13,6 +13,7 @@ enum Role {
   REPORTER
   EDITOR
   ADMIN
+  USER
 }
 
 enum ArticleStatus {
@@ -33,9 +34,12 @@ model User {
   id       String    @id @default(uuid())
   name     String?
   email    String    @unique
-  password String
+  password String?
+  image    String?
   role     Role      @default(REPORTER)
   articles Article[]
+  comments Comment[]
+  likes    ArticleLike[]
 }
 
 model Category {
@@ -93,6 +97,7 @@ model Article {
   locationId         String?
   edition            String?
   language           String    @default("en")
+  editorBrief        Json?
 
   // Flags
   breaking     Boolean @default(false)
@@ -116,10 +121,37 @@ model Article {
   schemaOverride  Json?
   robotsOverride  String?
 
+  comments Comment[]
+  likes    ArticleLike[]
+
   @@index([status, publishedAt])
   @@index([categoryId, status])
   @@index([breaking, status])
   @@index([featured, status])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([articleId])
+}
+
+model ArticleLike {
+  id        String   @id @default(uuid())
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([articleId, userId])
 }
 
 model AuditLog {

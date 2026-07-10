@@ -8,14 +8,14 @@ export default function NotFound() {
     <>
       <SiteHeader />
       <main className="mx-auto flex min-h-[72vh] max-w-4xl flex-col items-center justify-center px-4 py-20 text-center sm:px-6">
-        <div className="glass-panel-strong w-full rounded-[36px] border border-white/70 p-10">
+        <div className="w-full rounded-2xl sm:rounded-[36px] border border-slate-200 bg-white/80 backdrop-blur-sm shadow-lg p-6 sm:p-10">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-slate-950 text-white">
             <AlertTriangle size={32} />
           </div>
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.26em] text-slate-500">
             पेज नहीं मिला
           </p>
-          <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">
+          <h1 className="mt-3 text-2xl font-black tracking-tight text-slate-950 sm:text-4xl md:text-5xl">
             यह पेज यहां उपलब्ध नहीं है।
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-base leading-8 text-slate-600">

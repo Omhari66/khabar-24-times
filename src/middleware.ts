@@ -10,8 +10,10 @@ export default async function middleware(req: NextRequest) {
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    img-src 'self' blob: data: https://res.cloudinary.com;
+    img-src 'self' blob: data: https: http:;
+    connect-src 'self' https://api.cloudinary.com;
     font-src 'self' https://fonts.gstatic.com;
+    frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com;
     object-src 'none';
     base-uri 'self';
     form-action 'self';
@@ -29,7 +31,7 @@ export default async function middleware(req: NextRequest) {
 
   // Rate Limiting Basics
   if (pathname.startsWith('/api/')) {
-    res.headers.set('Access-Control-Allow-Origin', process.env.NEXT_PUBLIC_SITE_URL || 'https://www.bharatsentinel.in');
+    res.headers.set('Access-Control-Allow-Origin', process.env.NEXT_PUBLIC_SITE_URL || 'https://www.khabar24times.in');
     res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   }
 

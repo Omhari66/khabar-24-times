@@ -54,3 +54,49 @@
 .ticker-track:hover {
   animation-play-state: paused;
 }
+
+/* =============================================
+   Khabar 24 Times — Logo Animations
+   ============================================= */
+
+/* 1. Rotating animation for the logo image */
+@keyframes logo-rotate {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 2. Live pulse dot blink */
+@keyframes live-pulse {
+  0%, 100% { opacity: 1;    transform: scale(1); }
+  50%       { opacity: 0.3;  transform: scale(0.7); }
+}
+
+/* Applied to the logo text — simple white, no animation */
+.logo-text {
+  display: inline-block;
+  color: #fff;
+}
+
+/* Rotating logo image */
+.logo-spin {
+  animation: logo-rotate 8s linear infinite;
+  display: inline-block;
+}
+
+.logo-spin:hover {
+  animation-duration: 3s;
+}
+
+/* Live dot next to the tagline */
+.logo-live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  margin-right: 5px;
+  animation: live-pulse 1.4s ease-in-out infinite;
+  box-shadow: 0 0 6px 2px rgba(239, 68, 68, 0.55);
+  vertical-align: middle;
+}
+

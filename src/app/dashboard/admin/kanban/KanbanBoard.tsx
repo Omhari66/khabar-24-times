@@ -5,7 +5,7 @@ import { User, Tag, Calendar, Clock, CheckCircle2, XCircle, FileText, Loader2 } 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-type ArticleStatus = "DRAFT" | "PENDING" | "PUBLISHED" | "REJECTED";
+import { ArticleStatus } from "@prisma/client";
 
 interface Article {
   id: string;
@@ -17,10 +17,10 @@ interface Article {
   category: { name: string };
 }
 
-export default function KanbanBoard({ initialArticles }: { initialArticles: Record<string, unknown>[] }) {
+export default function KanbanBoard({ initialArticles }: { initialArticles: (Omit<Article, "updatedAt"> & { updatedAt: string | Date })[] }) {
   const router = useRouter();
   const [articles, setArticles] = useState<Article[]>(
-    initialArticles.map(a => ({
+    initialArticles.map((a) => ({
       ...a,
       updatedAt: new Date(a.updatedAt)
     }))

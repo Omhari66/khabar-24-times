@@ -4,6 +4,7 @@ import { apiSuccess } from "@/lib/api/response";
 import { parseJsonBody, optionalTrimmedString } from "@/lib/api/validation";
 import { ArticleRepository } from "@/lib/repositories/article-repository";
 import { ArticleService } from "@/lib/services/article-service";
+import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/api/auth";
 import { ForbiddenError } from "@/lib/errors";
 
@@ -18,6 +19,7 @@ const updateArticleSchema = z.object({
   featured: z.boolean().optional(),
   trending: z.boolean().optional(),
   editorsPick: z.boolean().optional(),
+  editorBrief: z.any().optional(),
 });
 
 const articleService = new ArticleService(new ArticleRepository());
@@ -67,6 +69,13 @@ export const PATCH = withApiHandler({ scope: "api/articles/[id]:update" }, async
   const updateData: Record<string, unknown> = { ...body };
   if (body.status === "PENDING") {
     updateData.rejectionNote = null;
+  }
+
+  if (body.featured === true) {
+    await prisma.article.updateMany({
+      where: { id: { not: params.id }, featured: true },
+      data: { featured: false }
+    });
   }
 
   const updatedArticle = await articleService.updateArticle(params.id, updateData);

@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Calendar as CalendarIcon, User, CheckCircle, Clock, AlertCircle, FileText, Tag } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, User, CheckCircle, Clock, FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { Assignment, CalendarEvent, User as PrismaUser } from "@prisma/client";
+
 interface PlanningBoardProps {
-  initialAssignments: Record<string, unknown>[];
-  initialEvents: Record<string, unknown>[];
-  reporters: Record<string, unknown>[];
+  initialAssignments: Assignment[];
+  initialEvents: CalendarEvent[];
+  reporters: Pick<PrismaUser, "id" | "name" | "email">[];
 }
 
 export default function PlanningBoard({ initialAssignments, initialEvents, reporters }: PlanningBoardProps) {
@@ -123,7 +125,7 @@ export default function PlanningBoard({ initialAssignments, initialEvents, repor
         </div>
 
         <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-          {assignments.map((a: any) => {
+          {assignments.map((a: Assignment) => {
             const reporter = reporters.find(r => r.id === a.reporterId);
             return (
               <div 
@@ -187,7 +189,7 @@ export default function PlanningBoard({ initialAssignments, initialEvents, repor
         </div>
 
         <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-          {events.map((e: any) => (
+          {events.map((e: CalendarEvent) => (
             <div key={e.id} className="p-4 rounded-2xl border border-violet-100 dark:border-violet-950/40 bg-violet-50/20 dark:bg-violet-950/10 hover:border-violet-200 dark:hover:border-violet-800 transition duration-200">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="font-bold text-violet-955 dark:text-violet-200">{e.title}</h3>
@@ -229,7 +231,7 @@ export default function PlanningBoard({ initialAssignments, initialEvents, repor
                 <label className="text-sm font-semibold block mb-1">Reporter</label>
                 <select required value={assignmentReporterId} onChange={e => setAssignmentReporterId(e.target.value)} className="w-full border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 bg-white dark:bg-slate-950 outline-none focus:border-blue-500">
                   <option value="">Select a reporter</option>
-                  {reporters.map((r: any) => (
+                  {reporters.map((r: Pick<PrismaUser, "id" | "name" | "email">) => (
                     <option key={r.id} value={r.id}>{r.name || r.email}</option>
                   ))}
                 </select>
