@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, Search, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 
 type Category = {
@@ -21,7 +21,17 @@ export default function SiteHeaderClient({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
   const { data: session, status } = useSession();
+
+  // If the image loaded broken before React hydration, naturalWidth will be 0.
+  // This hook catches it and switches to the letter fallback immediately.
+  useEffect(() => {
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth === 0) {
+      setImgError(true);
+    }
+  }, [session?.user?.image]);
+
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-structural shadow-sm font-sans">
@@ -82,6 +92,7 @@ export default function SiteHeaderClient({
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
+                      ref={imgRef}
                       src={session.user.image} 
                       alt="Profile" 
                       className="h-8 w-8 rounded-full border border-primary-light object-cover" 
