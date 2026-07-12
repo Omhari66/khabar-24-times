@@ -5,8 +5,9 @@ import CreateUserClient from "./CreateUserClient";
 
 export const dynamic = "force-dynamic";
 
+import { prisma } from "@/lib/prisma";
+
 export default async function CreateUserPage() {
-  // Defense-in-depth: server-side role check (middleware also enforces this)
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
@@ -17,5 +18,10 @@ export default async function CreateUserPage() {
     redirect("/dashboard?error=forbidden");
   }
 
-  return <CreateUserClient />;
+  const categories = await prisma.category.findMany({
+    select: { id: true, name: true, slug: true },
+    orderBy: { name: "asc" }
+  });
+
+  return <CreateUserClient categories={categories} />;
 }

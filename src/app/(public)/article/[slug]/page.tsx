@@ -9,6 +9,8 @@ import ReaderActions from "../../components/ReaderActions";
 import TiptapRenderer, { extractPlainText } from "../../components/TiptapRenderer";
 import { ArticleSummaryBox } from "../../components/ArticleSummaryBox";
 import ArticleComments from "../../components/ArticleComments";
+import CopyProtection from "../../components/CopyProtection";
+import { AdBanner } from "../../components/AdBanner";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -20,7 +22,7 @@ interface ArticlePageProps {
 }
 
 const ARTICLE_INCLUDE = {
-  author: { select: { name: true } },
+  author: { select: { name: true, location: true } },
   category: { select: { name: true, slug: true, id: true } },
 } as const;
 
@@ -124,7 +126,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     "dateModified": new Date(article.updatedAt).toISOString(),
     "author": [{
       "@type": "Person",
-      "name": article.author.name ?? "Khabar 24 Times Desk"
+      "name": article.author?.name ?? "Khabar 24 Times Desk"
     }]
   };
 
@@ -159,7 +161,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-y border-structural">
               <div className="flex flex-col gap-1 text-sm font-sans text-text-secondary">
                 <span className="font-bold text-text-primary uppercase tracking-wide">
-                  By {article.author.name ?? "Khabar 24 Times Desk"}
+                  By {article.author?.name ?? "Khabar 24 Times Desk"}
+                  {article.author?.location ? ` | ${article.author.location}` : ""}
                 </span>
                 <div className="flex items-center gap-2 text-xs">
                   <span>Published: {formatDate(article.publishedAt)}</span>
@@ -178,22 +181,36 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
 
           {article.coverImageUrl && (
-            <div className="relative aspect-video w-full border-b border-structural">
-              <Image
-                src={article.coverImageUrl}
-                alt={article.title}
-                fill
-                priority
-                className="object-cover"
-              />
-            </div>
+            <figure className="w-full border-b border-structural">
+              <div className="relative aspect-video w-full">
+                <Image
+                  src={article.coverImageUrl}
+                  alt={article.coverImageAltText || article.title}
+                  fill
+                  priority
+                  className="object-cover"
+                />
+              </div>
+              {(article.coverImageCaption || article.photographerCredit) && (
+                <figcaption className="px-6 md:px-8 py-3 bg-surface-muted text-xs font-sans text-text-secondary border-t border-structural flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="italic">{article.coverImageCaption}</span>
+                  {article.photographerCredit && (
+                    <span className="font-semibold uppercase tracking-wider whitespace-nowrap">
+                      (Photo: {article.photographerCredit})
+                    </span>
+                  )}
+                </figcaption>
+              )}
+            </figure>
           )}
 
           <div className="p-6 md:p-8">
             <ArticleSummaryBox summary={article.summary} />
-            <div className="prose prose-lg prose-headings:font-serif prose-headings:font-bold prose-p:font-sans prose-p:text-text-primary max-w-none [&_iframe]:aspect-video [&_iframe]:w-full [&_iframe]:bg-black">
-              <TiptapRenderer content={article.content} />
-            </div>
+            <CopyProtection sourceUrl={`https://www.khabar24times.in/article/${article.slug}`}>
+              <div className="prose prose-lg prose-headings:font-serif prose-headings:font-bold prose-p:font-sans prose-p:text-text-primary max-w-none [&_iframe]:aspect-video [&_iframe]:w-full [&_iframe]:bg-black">
+                <TiptapRenderer content={article.content} />
+              </div>
+            </CopyProtection>
           </div>
 
           {/* Comments Section */}
@@ -232,10 +249,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
           </div>
 
-          {/* Ad Placeholder */}
-          <div className="bg-surface-border/50 border border-structural h-64 flex items-center justify-center text-text-secondary text-xs uppercase tracking-widest">
-            Advertisement
-          </div>
+          {/* Sidebar Advertisement */}
+          <AdBanner slotName="article-sidebar" />
         </aside>
 
       </main>

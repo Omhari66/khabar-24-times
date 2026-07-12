@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { name, email, password, role } = body;
+    const { name, email, password, role, location, categoryId } = body;
 
     // Validation
     if (!email || !password || !role) {
@@ -57,6 +57,8 @@ export async function POST(req: Request) {
         email,
         password: hashedPassword,
         role,
+        location: location || null,
+        categoryId: categoryId || null,
       },
       select: {
         id: true,

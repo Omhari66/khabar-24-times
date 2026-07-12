@@ -31,7 +31,7 @@ export async function GET() {
           <pubDate>${pubDate}</pubDate>
           <description><![CDATA[${description}]]></description>
           <category><![CDATA[${article.category.name}]]></category>
-          <author>${article.author.name}</author>
+          <author>${article.author?.name || "Khabar 24 Times Desk"}</author>
         </item>
       `;
     })

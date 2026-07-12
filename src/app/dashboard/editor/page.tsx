@@ -121,8 +121,15 @@ export default async function EditorDashboard({ searchParams }: EditorDashboardP
               . Review and publish submitted articles.
             </p>
           </div>
-          {/* Quick stats */}
-          <div className="flex gap-3">
+          {/* Quick stats & Actions */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              href="/dashboard/reporter/new"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 rounded-xl font-medium text-sm transition-colors shadow-sm"
+            >
+              <Edit2 size={16} />
+              Write New Article
+            </Link>
             <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/30 rounded-xl">
               <Clock size={16} className="text-amber-600 dark:text-amber-400" />
               <span className="text-sm font-bold text-amber-700 dark:text-amber-400">
@@ -181,7 +188,7 @@ export default async function EditorDashboard({ searchParams }: EditorDashboardP
                       </span>
                       <span className="inline-flex items-center gap-1 text-xs text-slate-400">
                         <User size={11} />
-                        {article.author.name ?? "Unknown"}
+                        {article.author?.name ?? "Unknown"}
                       </span>
                       <span className="inline-flex items-center gap-1 text-xs text-slate-400">
                         <Calendar size={11} />
@@ -244,7 +251,7 @@ export default async function EditorDashboard({ searchParams }: EditorDashboardP
                       </span>
                       <span className="inline-flex items-center gap-1 text-xs text-slate-400">
                         <User size={11} />
-                        {article.author.name ?? "Unknown"}
+                        {article.author?.name ?? "Unknown"}
                       </span>
                       <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
                         <Calendar size={11} />
@@ -312,7 +319,7 @@ export default async function EditorDashboard({ searchParams }: EditorDashboardP
                         </span>
                         <span className="inline-flex items-center gap-1 text-xs text-slate-400">
                           <User size={11} />
-                          {article.author.name ?? "Unknown"}
+                          {article.author?.name ?? "Unknown"}
                         </span>
                         <span className="inline-flex items-center gap-1 text-xs text-slate-400">
                           <Calendar size={11} />

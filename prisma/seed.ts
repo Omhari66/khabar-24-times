@@ -133,6 +133,23 @@ async function main() {
     }
   }
   console.log("Permissions and role mappings seeded successfully!");
+
+  console.log("\nSeeding Ad Slots...");
+  const adSlots = [
+    { name: "homepage-top-banner", description: "Top Banner on the Main Homepage" },
+    { name: "homepage-sidebar", description: "Right Sidebar on the Main Homepage" },
+    { name: "article-sidebar", description: "Right Sidebar next to an open Article" },
+    { name: "article-inline", description: "Automatically inserted inside long Articles (Every 4 paragraphs)" }
+  ];
+
+  for (const slot of adSlots) {
+    await prisma.adSlot.upsert({
+      where: { name: slot.name },
+      update: { description: slot.description },
+      create: { name: slot.name, description: slot.description }
+    });
+  }
+  console.log("Ad Slots seeded successfully!");
 }
 
 main()

@@ -1,4 +1,6 @@
 import React from "react";
+import Image from "next/image";
+import { AdBanner } from "./AdBanner";
 
 type TiptapMark = {
   type: string;
@@ -124,6 +126,15 @@ function renderNode(
     case "paragraph": {
       const children = node.content?.map((child, childIndex) => renderNode(child, childIndex, key)) ?? [];
       const align = (node.attrs?.textAlign as React.CSSProperties["textAlign"]) || "left";
+      const hasBlockChild = node.content?.some(c => c.type === "image" || c.type === "youtube");
+      
+      if (hasBlockChild) {
+        return (
+          <div key={key} className="my-6 text-[1.05rem] leading-8 text-slate-700" style={{ textAlign: align }}>
+            {children.length > 0 ? children : <>&nbsp;</>}
+          </div>
+        );
+      }
       return (
         <p key={key} className="my-6 text-[1.05rem] leading-8 text-slate-700" style={{ textAlign: align }}>
           {children.length > 0 ? children : <>&nbsp;</>}
@@ -195,8 +206,15 @@ function renderNode(
       if (!src) return null;
       return (
         <figure key={key} className="my-8">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src} alt={alt} className="max-w-full rounded-[24px] border border-slate-200" />
+          <Image 
+            src={src} 
+            alt={alt} 
+            width={0} 
+            height={0} 
+            sizes="100vw" 
+            style={{ width: '100%', height: 'auto' }} 
+            className="rounded-[24px] border border-slate-200" 
+          />
         </figure>
       );
     }
@@ -233,9 +251,22 @@ export default function TiptapRenderer({ content }: { content: unknown }) {
 
   const documentNode = content as TiptapNode;
 
+  const renderedNodes: React.ReactNode[] = [];
+  let pCount = 0;
+
+  documentNode.content?.forEach((node, index) => {
+    renderedNodes.push(renderNode(node, index, "root"));
+    if (node.type === "paragraph") {
+      pCount++;
+      if (pCount > 0 && pCount % 4 === 0) {
+        renderedNodes.push(<AdBanner key={`ad-${index}`} slotName="article-inline" />);
+      }
+    }
+  });
+
   return (
     <div className="tiptap-body max-w-none">
-      {documentNode.content?.map((node, index) => renderNode(node, index, "root"))}
+      {renderedNodes}
     </div>
   );
 }

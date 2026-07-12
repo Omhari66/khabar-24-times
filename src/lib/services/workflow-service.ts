@@ -41,12 +41,14 @@ export class WorkflowService extends ApplicationService {
       status: "SUCCESS",
     });
 
-    await this.notificationService.sendNotification(
-      article.authorId,
-      `Your article "${article.title}" has been moved from ${previousStatus} to ${targetStatus}.${
-        comments ? ` Note: "${comments}"` : ""
-      }`
-    );
+    if (article.authorId) {
+      await this.notificationService.sendNotification(
+        article.authorId,
+        `Your article "${article.title}" has been moved from ${previousStatus} to ${targetStatus}.${
+          comments ? ` Note: "${comments}"` : ""
+        }`
+      );
+    }
 
     return updated;
   }

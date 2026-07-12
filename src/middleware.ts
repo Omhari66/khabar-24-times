@@ -11,7 +11,7 @@ export default async function middleware(req: NextRequest) {
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     img-src 'self' blob: data: https: http:;
-    connect-src 'self' https://api.cloudinary.com;
+    connect-src 'self' https://api.cloudinary.com https://res.cloudinary.com;
     font-src 'self' https://fonts.gstatic.com;
     frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com;
     object-src 'none';

@@ -46,7 +46,7 @@
 }
 
 .ticker-track {
-  animation: ticker-scroll 45s linear infinite;
+  animation: ticker-scroll 25s linear infinite;
   display: flex;
   white-space: nowrap;
 }

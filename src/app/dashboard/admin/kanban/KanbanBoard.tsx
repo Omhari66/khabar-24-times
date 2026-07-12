@@ -13,7 +13,7 @@ interface Article {
   slug: string;
   status: ArticleStatus;
   updatedAt: Date;
-  author: { name: string | null; email: string };
+  author?: { name: string | null; email: string } | null;
   category: { name: string };
 }
 
@@ -113,7 +113,7 @@ export default function KanbanBoard({ initialArticles }: { initialArticles: (Omi
                 <div className="space-y-1.5 mt-3 text-xs text-slate-500 dark:text-slate-400">
                   <div className="flex items-center gap-1.5">
                     <User size={12} />
-                    <span className="truncate">{article.author.name || article.author.email}</span>
+                    <span className="truncate">{article.author?.name || article.author?.email || "Unknown"}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">

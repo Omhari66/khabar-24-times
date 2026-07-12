@@ -12,7 +12,7 @@ interface Article {
   trending: boolean;
   editorsPick: boolean;
   category: { name: string };
-  author: { name: string | null };
+  author?: { name: string | null } | null;
 }
 
 export default function HomepageBuilder({ initialArticles }: { initialArticles: Article[] }) {

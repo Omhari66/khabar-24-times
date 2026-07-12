@@ -114,17 +114,15 @@ export async function DELETE(
       );
     }
 
-    // Check if user has any articles
-    const articleCount = await prisma.article.count({
+    // Detach articles from this user (keep articles, just remove the author link)
+    await prisma.article.updateMany({
       where: { authorId: targetUserId },
+      data: { authorId: null },
     });
 
-    if (articleCount > 0) {
-      return NextResponse.json(
-        { error: `This user has ${articleCount} article(s) and cannot be deleted. Remove or reassign their articles first.` },
-        { status: 409 }
-      );
-    }
+    // Delete comments and likes by this user
+    await prisma.comment.deleteMany({ where: { userId: targetUserId } });
+    await prisma.articleLike.deleteMany({ where: { userId: targetUserId } });
 
     await prisma.user.delete({ where: { id: targetUserId } });
 

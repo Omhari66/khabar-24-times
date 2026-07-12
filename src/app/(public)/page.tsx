@@ -5,6 +5,7 @@ import { extractPlainText } from "./components/TiptapRenderer";
 import { TopStoriesGrid } from "./components/TopStoriesGrid";
 import { MainFeedLayout } from "./components/MainFeedLayout";
 import { getLabelColor } from "@/lib/constants/theme";
+import { AdBanner } from "./components/AdBanner";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 60;
@@ -67,9 +68,12 @@ export default async function HomePage() {
             <div className="flex-1 overflow-hidden ml-4">
               <div className="ticker-track space-x-8">
                 {[...breakingArticles, ...breakingArticles].map((article, i) => (
-                  <Link key={`${article.id}-${i}`} href={`/article/${article.slug}`} className="text-[13px] text-red-900 font-medium hover:underline">
-                    {article.title}
-                  </Link>
+                  <div key={`${article.id}-${i}`} className="flex items-center space-x-8">
+                    <Link href={`/article/${article.slug}`} className="text-[13px] text-red-900 font-medium hover:underline">
+                      {article.title}
+                    </Link>
+                    <span className="text-red-300 select-none text-xs">●</span>
+                  </div>
                 ))}
               </div>
             </div>
@@ -79,6 +83,11 @@ export default async function HomePage() {
 
       {/* Main Content */}
       <main className="py-6 space-y-10">
+        
+        {/* Top Ad Banner */}
+        <div className="container mx-auto px-4">
+          <AdBanner slotName="homepage-top-banner" />
+        </div>
         
         {/* Top Section */}
         <section className="container mx-auto px-4 grid grid-cols-1 xl:grid-cols-12 gap-8">
@@ -112,7 +121,7 @@ export default async function HomePage() {
                     {extractPlainText(featuredArticle.content, 250)}
                   </p>
                   <div className="text-[12px] text-slate-500 font-medium">
-                    By <span className="font-bold text-slate-700">{featuredArticle.author.name ?? "Desk"}</span> | {formatDate(featuredArticle.publishedAt)}
+                    By <span className="font-bold text-slate-700">{featuredArticle.author?.name ?? "Desk"}</span> | {formatDate(featuredArticle.publishedAt)}
                   </div>
                 </div>
               </article>

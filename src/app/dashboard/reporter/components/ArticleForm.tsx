@@ -71,6 +71,8 @@ interface ArticleFormProps {
     categoryId: string;
     status: string;
     editorBrief?: { angle?: string; checklist?: string[] } | null;
+    coverImageCaption?: string | null;
+    photographerCredit?: string | null;
   };
   categories: Category[];
   mode?: "reporter" | "editor" | "admin";
@@ -137,6 +139,8 @@ export default function ArticleForm({
   const [slug, setSlug] = useState(initialData?.slug || "");
   const [categoryId, setCategoryId] = useState(initialData?.categoryId || "");
   const [coverImageUrl, setCoverImageUrl] = useState(initialData?.coverImageUrl || "");
+  const [coverImageCaption, setCoverImageCaption] = useState(initialData?.coverImageCaption || "");
+  const [photographerCredit, setPhotographerCredit] = useState(initialData?.photographerCredit || "");
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState<"DRAFT" | "PENDING" | null>(null);
   const [error, setError] = useState("");
@@ -301,6 +305,8 @@ export default function ArticleForm({
           slug: slug.trim(),
           content: editor.getJSON(),
           coverImageUrl: coverImageUrl || null,
+          coverImageCaption: coverImageCaption || null,
+          photographerCredit: photographerCredit || null,
           categoryId,
           status: targetStatus,
           editorBrief,
@@ -344,6 +350,8 @@ export default function ArticleForm({
           slug: slug.trim(),
           content: editor.getJSON(),
           coverImageUrl: coverImageUrl || null,
+          coverImageCaption: coverImageCaption || null,
+          photographerCredit: photographerCredit || null,
           categoryId,
           editorBrief,
         }),
@@ -383,6 +391,8 @@ export default function ArticleForm({
           slug: slug.trim(),
           content: editor.getJSON(),
           coverImageUrl: coverImageUrl || null,
+          coverImageCaption: coverImageCaption || null,
+          photographerCredit: photographerCredit || null,
           categoryId,
           // Explicitly keep PUBLISHED — do NOT change status
         }),
@@ -503,10 +513,46 @@ export default function ArticleForm({
 
   const addImage = () => {
     if (!editor) return;
-    const url = window.prompt("Enter image URL:");
-    if (url) {
-      editor.commands.setImage({ src: url });
-    }
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      const altText = window.prompt("Enter image caption/alt text:");
+      
+      try {
+        setIsUploading(true);
+        const signatureResponse = await fetch("/api/upload-signature", { method: "POST" });
+        if (!signatureResponse.ok) throw new Error("Failed to get upload credentials");
+        
+        const { signature, timestamp, cloudName, apiKey, folder } = await signatureResponse.json();
+        
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("signature", signature);
+        formData.append("timestamp", timestamp.toString());
+        formData.append("api_key", apiKey);
+        formData.append("folder", folder);
+
+        const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) throw new Error("Failed to upload image");
+        
+        const data = await uploadResponse.json();
+        editor.commands.setImage({ src: data.secure_url, alt: altText || "" });
+      } catch (err) {
+        console.error(err);
+        setError("Failed to upload article image");
+      } finally {
+        setIsUploading(false);
+      }
+    };
+    input.click();
   };
 
   return (
@@ -621,11 +667,36 @@ export default function ArticleForm({
                   )}
                 </label>
               )}
-
-              <div className="space-y-2 text-sm text-slate-600">
-                <p>Use a visually clean cover that supports the story, not just decorates it.</p>
-                <p>High-contrast, documentary-style imagery works best for this design.</p>
-              </div>
+              
+              {coverImageUrl ? (
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-slate-700">Image Caption</label>
+                    <input
+                      type="text"
+                      value={coverImageCaption || ""}
+                      onChange={(e) => setCoverImageCaption(e.target.value)}
+                      placeholder="E.g. A new Kia SUV prototype testing..."
+                      className="w-full rounded-[14px] border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-slate-700">Photographer Credit</label>
+                    <input
+                      type="text"
+                      value={photographerCredit || ""}
+                      onChange={(e) => setPhotographerCredit(e.target.value)}
+                      placeholder="E.g. Photo: Kia Motor"
+                      className="w-full rounded-[14px] border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2 text-sm text-slate-600">
+                  <p>Use a visually clean cover that supports the story, not just decorates it.</p>
+                  <p>High-contrast, documentary-style imagery works best for this design.</p>
+                </div>
+              )}
             </div>
           </div>
 

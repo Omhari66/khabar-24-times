@@ -92,7 +92,7 @@ export default async function ReviewArticlePage({
             <span className="inline-flex items-center gap-1.5">
               <User size={14} className="text-slate-400" />
               <span className="font-medium text-slate-700 dark:text-slate-300">
-                {article.author.name ?? article.author.email}
+                {article.author?.name ?? article.author?.email ?? "Unknown"}
               </span>
             </span>
             <span className="inline-flex items-center gap-1.5">

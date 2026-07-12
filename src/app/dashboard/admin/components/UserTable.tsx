@@ -285,10 +285,10 @@ export default function UserTable({
                     <AlertTriangle size={18} className="text-rose-500 shrink-0 mt-0.5" />
                     <div className="text-sm text-rose-800 dark:text-rose-300">
                       <p className="font-semibold mb-1">This action is irreversible.</p>
-                      <p>Users with articles cannot be deleted — you must remove their articles first.</p>
+                      <p>The user will be permanently removed. Their articles will be preserved but shown as authored by &quot;News Desk&quot;.</p>
                       {editingUser._count.articles > 0 && (
-                        <p className="mt-2 font-bold">
-                          ⚠ This user has {editingUser._count.articles} article(s). Deletion will be blocked.
+                        <p className="mt-2 font-medium">
+                          This user has {editingUser._count.articles} article(s) — they will remain published under the News Desk.
                         </p>
                       )}
                     </div>

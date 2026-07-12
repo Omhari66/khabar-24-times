@@ -5,13 +5,21 @@ import { useRouter } from "next/navigation";
 import { UserPlus, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 
-export default function CreateUserClient() {
+interface CategoryData {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export default function CreateUserClient({ categories }: { categories: CategoryData[] }) {
   const router = useRouter();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"REPORTER" | "EDITOR" | "ADMIN">("REPORTER");
+  const [location, setLocation] = useState("");
+  const [categoryId, setCategoryId] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -25,7 +33,7 @@ export default function CreateUserClient() {
       const res = await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role }),
+        body: JSON.stringify({ name, email, password, role, location, categoryId }),
       });
 
       if (!res.ok) {
@@ -111,6 +119,39 @@ export default function CreateUserClient() {
                 minLength={6}
                 className="w-full px-4 py-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition-all"
               />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="location" className="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">
+                  Exact Location
+                </label>
+                <input
+                  id="location"
+                  type="text"
+                  placeholder="e.g. New Delhi, South Block"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="categoryId" className="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">
+                  Assigned Category
+                </label>
+                <select
+                  id="categoryId"
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition-all"
+                >
+                  <option value="">-- None --</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div>

@@ -11,7 +11,7 @@ interface ArticleCardProps {
   category: { name: string; slug: string };
   publishedAt: Date | null;
   coverImageUrl: string | null;
-  author: { name: string | null };
+  author?: { name: string | null } | null;
   content?: unknown;
 }
 
@@ -73,7 +73,7 @@ export default function ArticleCard({
           </p>
         )}
         <div className="mt-auto flex flex-wrap items-center gap-x-3 text-xs text-text-secondary font-medium uppercase">
-          <span>{author.name ?? "Desk"}</span>
+          <span>{author?.name ?? "Desk"}</span>
           <span className="text-surface-border">|</span>
           {publishedAt && <span>{formatDate(publishedAt)}</span>}
           {readTime && (

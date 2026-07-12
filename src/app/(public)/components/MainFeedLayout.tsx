@@ -2,6 +2,7 @@ import { LatestNewsRail } from "./LatestNewsRail";
 import { InfiniteArticleFeed } from "./InfiniteArticleFeed";
 import { TrendingPromoRail } from "./TrendingPromoRail";
 import { getInfiniteFeed } from "@/lib/services/public-queries";
+import { AdBanner } from "./AdBanner";
 
 export async function MainFeedLayout() {
   const initialFeed = await getInfiniteFeed(undefined, 10);
@@ -23,8 +24,9 @@ export async function MainFeedLayout() {
         </main>
 
         {/* Right Rail - Trending Promo */}
-        <aside className="lg:col-span-3">
+        <aside className="lg:col-span-3 space-y-6">
           <TrendingPromoRail />
+          <AdBanner slotName="homepage-sidebar" />
         </aside>
       </div>
     </div>

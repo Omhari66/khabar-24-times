@@ -20,8 +20,13 @@ export default async function AdminDashboardPage() {
     redirect("/dashboard?error=forbidden");
   }
 
-  // Fetch all users, excluding passwords
+  // Fetch all team members (excluding standard users and passwords)
   const users = await prisma.user.findMany({
+    where: {
+      role: {
+        in: ["REPORTER", "EDITOR", "ADMIN"],
+      },
+    },
     select: {
       id: true,
       name: true,
@@ -42,7 +47,7 @@ export default async function AdminDashboardPage() {
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">User Management</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Manage system access and assign roles to team members.
+            Manage your editorial team members.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
