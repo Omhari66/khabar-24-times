@@ -56,7 +56,7 @@ CRITICAL INSTRUCTIONS:
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama3-70b-8192", // High quality model
+        model: "llama-3.3-70b-versatile", // Current supported model
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Raw Data to turn into a news story:\n\n${rawData}` }

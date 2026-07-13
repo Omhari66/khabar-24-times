@@ -20,6 +20,8 @@ const updateArticleSchema = z.object({
   trending: z.boolean().optional(),
   editorsPick: z.boolean().optional(),
   editorBrief: z.any().optional(),
+  coverImageCaption: z.string().nullable().optional(),
+  photographerCredit: z.string().nullable().optional(),
 });
 
 const articleService = new ArticleService(new ArticleRepository());
