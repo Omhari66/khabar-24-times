@@ -96,7 +96,7 @@ export default async function HomePage() {
           <div className="xl:col-span-7">
             {featuredArticle ? (
               <article className="group relative bg-white border border-slate-200 overflow-hidden shadow-sm">
-                <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
+                <div className="relative aspect-video w-full overflow-hidden bg-slate-100 flex items-center justify-center">
                   {featuredArticle.coverImageUrl && (
                     <Image
                       src={featuredArticle.coverImageUrl}
@@ -104,7 +104,7 @@ export default async function HomePage() {
                       fill
                       priority
                       sizes="(max-width: 1280px) 100vw, 800px"
-                      className="object-cover transition duration-300 group-hover:scale-105"
+                      className="object-contain transition duration-300 group-hover:scale-105"
                     />
                   )}
                 </div>

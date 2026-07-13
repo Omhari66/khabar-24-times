@@ -181,14 +181,17 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
 
           {article.coverImageUrl && (
-            <figure className="w-full border-b border-structural">
-              <div className="relative aspect-video w-full">
+            <figure className="w-full border-b border-structural bg-slate-50 flex justify-center">
+              <div className="relative w-full max-h-[70vh] flex justify-center overflow-hidden">
                 <Image
                   src={article.coverImageUrl}
                   alt={article.coverImageAltText || article.title}
-                  fill
+                  width={0}
+                  height={0}
+                  sizes="100vw"
                   priority
-                  className="object-cover"
+                  style={{ width: '100%', height: 'auto', maxHeight: '70vh', objectFit: 'contain' }}
+                  className="bg-slate-100"
                 />
               </div>
               {(article.coverImageCaption || article.photographerCredit) && (

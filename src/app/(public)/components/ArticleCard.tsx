@@ -53,7 +53,7 @@ export default function ArticleCard({
             alt={title}
             fill
             sizes="(max-width: 768px) 100vw, 200px"
-            className="object-cover transition duration-300 group-hover:scale-105"
+            className="object-contain transition duration-300 group-hover:scale-105"
           />
         ) : (
           <ThumbnailPlaceholder className="w-full h-full" />

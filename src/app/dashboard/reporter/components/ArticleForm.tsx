@@ -627,18 +627,19 @@ export default function ArticleForm({
             </label>
             <div className="flex flex-col gap-4 md:flex-row md:items-center">
               {coverImageUrl ? (
-                <div className="relative aspect-video w-full overflow-hidden rounded-[24px] border border-slate-200 bg-slate-100 md:w-72">
+                <div className="relative w-full overflow-hidden rounded-[24px] border border-slate-200 bg-slate-100 md:w-96 flex justify-center">
                   <Image
                     src={coverImageUrl}
                     alt="Cover preview"
-                    fill
-                    sizes="(max-width: 768px) 100vw, 288px"
-                    className="object-cover"
+                    width={0}
+                    height={0}
+                    sizes="(max-width: 768px) 100vw, 384px"
+                    style={{ width: '100%', height: 'auto', maxHeight: '400px', objectFit: 'contain' }}
                   />
                   <button
                     type="button"
                     onClick={() => setCoverImageUrl("")}
-                    className="absolute inset-x-4 bottom-4 rounded-full bg-black/70 px-3 py-2 text-xs font-semibold text-white backdrop-blur transition hover:bg-black/80"
+                    className="absolute inset-x-4 bottom-4 rounded-full bg-black/70 px-3 py-2 text-xs font-semibold text-white backdrop-blur transition hover:bg-black/80 text-center"
                   >
                     Remove cover
                   </button>
