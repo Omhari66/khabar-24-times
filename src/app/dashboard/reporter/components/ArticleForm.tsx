@@ -153,6 +153,52 @@ export default function ArticleForm({
     initialData?.editorBrief || { angle: "", checklist: [] }
   );
 
+  // AI Assistant State
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [aiTemplate, setAiTemplate] = useState("general");
+  const [aiRawData, setAiRawData] = useState("");
+  const [aiGeneratedHtml, setAiGeneratedHtml] = useState("");
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [aiError, setAiError] = useState("");
+
+  const handleGenerateAi = async () => {
+    if (!aiRawData.trim()) {
+      setAiError("Please provide some raw data to generate a story.");
+      return;
+    }
+    setIsGeneratingAi(true);
+    setAiError("");
+    setAiGeneratedHtml("");
+
+    try {
+      const response = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ template: aiTemplate, rawData: aiRawData })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate AI story.");
+      }
+
+      const data = await response.json();
+      setAiGeneratedHtml(data.html);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : "AI Generation failed.");
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
+
+  const insertAiContent = () => {
+    if (editor && aiGeneratedHtml) {
+      editor.chain().focus().insertContent(aiGeneratedHtml).run();
+      setIsAiModalOpen(false);
+      setAiRawData("");
+      setAiGeneratedHtml("");
+    }
+  };
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -706,16 +752,26 @@ export default function ArticleForm({
               <label className="block text-sm font-semibold text-slate-700">
                 Article body
               </label>
-              {mode === "reporter" && (
+              <div className="flex gap-2">
+                {mode === "reporter" && (
+                  <button
+                    type="button"
+                    onClick={injectPrompt}
+                    className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-900 transition hover:bg-amber-200"
+                  >
+                    <Sparkles size={13} />
+                    Insert story brief prompt
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={injectPrompt}
-                  className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-900 transition hover:bg-amber-200"
+                  onClick={() => setIsAiModalOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-3 py-1.5 text-xs font-semibold text-indigo-900 transition hover:bg-indigo-200"
                 >
-                  <Sparkles size={13} />
-                  Insert story brief prompt
+                  <Sparkles size={13} className="text-indigo-600" />
+                  AI Assistant
                 </button>
-              )}
+              </div>
             </div>
 
             <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-[rgba(255,255,255,0.75)]">
@@ -1088,6 +1144,87 @@ export default function ArticleForm({
           </div>
         </div>
       </aside>
+
+      {/* AI Assistant Modal */}
+      {isAiModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
+              <h2 className="flex items-center gap-2 text-lg font-bold text-slate-800">
+                <Sparkles className="text-indigo-600" size={20} />
+                AI Story Generator
+              </h2>
+              <button onClick={() => setIsAiModalOpen(false)} className="text-slate-400 hover:text-slate-700">
+                <XCircle size={24} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Story Type</label>
+                <select
+                  value={aiTemplate}
+                  onChange={(e) => setAiTemplate(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 p-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="general">General News Report</option>
+                  <option value="sports">Sports Match / Score</option>
+                  <option value="weather">Weather Update</option>
+                  <option value="earnings">Corporate Earnings</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Raw Facts & Data</label>
+                <textarea
+                  value={aiRawData}
+                  onChange={(e) => setAiRawData(e.target.value)}
+                  placeholder="Paste scores, temperatures, statistics, or basic facts here..."
+                  className="h-32 w-full resize-none rounded-lg border border-slate-300 p-3 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+
+              {aiError && (
+                <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200">
+                  {aiError}
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleGenerateAi}
+                  disabled={isGeneratingAi || !aiRawData.trim()}
+                  className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {isGeneratingAi ? <Loader2 className="animate-spin" size={16} /> : <Sparkles size={16} />}
+                  {isGeneratingAi ? "Generating..." : "Generate Story"}
+                </button>
+              </div>
+
+              {aiGeneratedHtml && (
+                <div className="mt-4 border-t border-slate-200 pt-4">
+                  <h3 className="mb-2 text-sm font-bold text-slate-700">Preview</h3>
+                  <div 
+                    className="max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: aiGeneratedHtml }}
+                  />
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={insertAiContent}
+                      className="rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white transition hover:bg-emerald-700"
+                    >
+                      Insert into Article
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
