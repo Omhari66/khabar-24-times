@@ -17,6 +17,7 @@ export default function AdminNav() {
     { href: "/dashboard/admin/planning", label: "Planning Board" },
     ...(role === "ADMIN" ? [{ href: "/dashboard/admin/categories", label: "Categories" }] : []),
     ...(role === "ADMIN" ? [{ href: "/dashboard/admin/advertisements", label: "Advertisements" }] : []),
+    ...(role === "ADMIN" ? [{ href: "/dashboard/admin/ai-chat", label: "✨ AI सहायक" }] : []),
   ];
 
   return (

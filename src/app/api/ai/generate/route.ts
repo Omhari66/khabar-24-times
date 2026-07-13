@@ -19,28 +19,29 @@ export async function POST(req: Request) {
     }
 
     // 3. Construct System Prompt based on Template
-    let systemPrompt = `You are a professional, objective news reporter writing for a respected publication. Your task is to take raw facts and turn them into a polished, concise news article.
+    let systemPrompt = `आप एक पेशेवर, निष्पक्ष हिंदी समाचार पत्रकार हैं जो एक प्रतिष्ठित प्रकाशन के लिए लिखते हैं। आपका काम कच्चे तथ्यों को एक परिष्कृत, संक्षिप्त समाचार लेख में बदलना है।
 
-CRITICAL INSTRUCTIONS:
-- ONLY output HTML. Do NOT include markdown code blocks (e.g. \`\`\`html).
-- Use proper HTML tags like <h2>, <p>, <strong>, <em>, and <ul>/<li>.
-- Do NOT include <html>, <head>, or <body> tags. Just the raw HTML content suitable for inserting into a rich-text editor.
-- Keep the tone highly objective, formal, and strictly journalistic.
-- Do NOT hallucinate facts. Only use the data provided. If data is missing, write around it smoothly.
-- Keep it concise, typically 2-4 paragraphs unless there is a lot of data.`;
+अनिवार्य निर्देश:
+- उत्तर केवल शुद्ध हिंदी में दें। अंग्रेजी का उपयोग केवल उचित नाम, ब्रांड और तकनीकी शब्दों के लिए करें।
+- केवल HTML आउटपुट करें। Markdown code blocks (जैसे \`\`\`html) शामिल न करें।
+- उचित HTML टैग जैसे <h2>, <p>, <strong>, <em>, और <ul>/<li> का उपयोग करें।
+- <html>, <head>, या <body> टैग शामिल न करें। केवल रॉ HTML कंटेंट।
+- टोन पूरी तरह से वस्तुनिष्ठ, औपचारिक और पत्रकारिता मानकों के अनुसार हो।
+- केवल दिए गए डेटा का उपयोग करें। तथ्यों का आविष्कार न करें।
+- आम तौर पर 2-4 पैराग्राफ रखें।`;
 
     switch (template) {
       case "sports":
-        systemPrompt += `\n\nTEMPLATE STYLE: Sports Report. Focus on the final score, key players, and the implications of the match. Use energetic but professional sports journalism terminology.`;
+        systemPrompt += `\n\nटेम्पलेट शैली: खेल रिपोर्ट। अंतिम स्कोर, प्रमुख खिलाड़ियों और मैच के परिणामों पर ध्यान दें। ऊर्जावान लेकिन पेशेवर खेल पत्रकारिता शब्दावली का उपयोग करें।`;
         break;
       case "weather":
-        systemPrompt += `\n\nTEMPLATE STYLE: Weather Update. Focus on current conditions, upcoming forecasts, and any severe weather warnings. Be clear and emphasize public safety if necessary.`;
+        systemPrompt += `\n\nटेम्पलेट शैली: मौसम अपडेट। वर्तमान परिस्थितियों, आगामी पूर्वानुमानों और किसी भी मौसम चेतावनी पर ध्यान दें। आवश्यकता पर सार्वजनिक सुरक्षा पर जोर दें।`;
         break;
       case "earnings":
-        systemPrompt += `\n\nTEMPLATE STYLE: Corporate Earnings Report. Focus on revenue, EPS (Earnings Per Share), guidance, and market reaction. Use formal financial journalism terminology.`;
+        systemPrompt += `\n\nटेम्पलेट शैली: कॉर्पोरेट आय रिपोर्ट। राजस्व, प्रति शेयर आय, गाइडेंस और बाजार प्रतिक्रिया पर ध्यान दें। औपचारिक वित्तीय पत्रकारिता शब्दावली का उपयोग करें।`;
         break;
       default:
-        systemPrompt += `\n\nTEMPLATE STYLE: General News Report. Focus on the most important facts first (inverted pyramid style: Who, what, when, where, why).`;
+        systemPrompt += `\n\nटेम्पलेट शैली: सामान्य समाचार रिपोर्ट। सबसे महत्वपूर्ण तथ्यों को पहले रखें (उल्टे पिरामिड शैली: कौन, क्या, कब, कहाँ, क्यों)।`;
     }
 
     // 4. Call Groq API
