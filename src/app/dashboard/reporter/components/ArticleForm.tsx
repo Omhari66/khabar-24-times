@@ -184,7 +184,9 @@ export default function ArticleForm({
         try {
           const errData = await response.json();
           if (errData.error) errMessage = errData.error;
-        } catch(e) {}
+        } catch {
+          // Ignore JSON parse errors
+        }
         throw new Error(errMessage);
       }
 
