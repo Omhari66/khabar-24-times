@@ -180,7 +180,12 @@ export default function ArticleForm({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate AI story.");
+        let errMessage = "Failed to generate AI story.";
+        try {
+          const errData = await response.json();
+          if (errData.error) errMessage = errData.error;
+        } catch(e) {}
+        throw new Error(errMessage);
       }
 
       const data = await response.json();
