@@ -137,6 +137,7 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
           }}
           categories={categories}
           mode={formMode}
+          isAdmin={session.user.role === "ADMIN"}
         />
       </div>
     </div>

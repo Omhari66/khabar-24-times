@@ -30,7 +30,7 @@ export default async function NewArticlePage() {
           Draft a new story and submit it for editing review.
         </p>
       </div>
-      <ArticleForm categories={categories} />
+      <ArticleForm categories={categories} isAdmin={session.user.role === "ADMIN"} />
     </div>
   );
 }

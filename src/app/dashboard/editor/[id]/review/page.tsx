@@ -119,6 +119,7 @@ export default async function ReviewArticlePage({
           }}
           categories={categories}
           mode="editor"
+          isAdmin={session.user.role === "ADMIN"}
         />
       </div>
     </div>

@@ -76,6 +76,7 @@ interface ArticleFormProps {
   };
   categories: Category[];
   mode?: "reporter" | "editor" | "admin";
+  isAdmin?: boolean;
 }
 
 const OPENING_ANGLES = [
@@ -133,6 +134,7 @@ export default function ArticleForm({
   initialData,
   categories,
   mode = "reporter",
+  isAdmin = false,
 }: ArticleFormProps) {
   const router = useRouter();
   const [title, setTitle] = useState(initialData?.title || "");
@@ -763,7 +765,7 @@ export default function ArticleForm({
                     Insert story brief prompt
                   </button>
                 )}
-                {mode === "admin" && (
+                {isAdmin && (
                   <button
                     type="button"
                     onClick={() => setIsAiModalOpen(true)}
