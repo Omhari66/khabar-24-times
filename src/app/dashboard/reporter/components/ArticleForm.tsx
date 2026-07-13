@@ -1178,10 +1178,11 @@ export default function ArticleForm({
                   onChange={(e) => setAiTemplate(e.target.value)}
                   className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 >
-                  <option value="general">General News Report</option>
-                  <option value="sports">Sports Match / Score</option>
-                  <option value="weather">Weather Update</option>
-                  <option value="earnings">Corporate Earnings</option>
+                  <option value="general">सामान्य समाचार रिपोर्ट</option>
+                  <option value="sports">खेल मैच / स्कोर</option>
+                  <option value="weather">मौसम अपडेट</option>
+                  <option value="earnings">कॉर्पोरेट आय रिपोर्ट</option>
+                  <option value="seo">🔍 SEO ऑप्टिमाइज़र (पूरा लेख पेस्ट करें)</option>
                 </select>
               </div>
 
@@ -1190,8 +1191,11 @@ export default function ArticleForm({
                 <textarea
                   value={aiRawData}
                   onChange={(e) => setAiRawData(e.target.value)}
-                  placeholder="Paste scores, temperatures, statistics, or basic facts here..."
-                  className="h-32 w-full resize-none rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-3 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  placeholder={aiTemplate === 'seo'
+                    ? 'यहाँ अपना पूरा लिखा हुआ आर्टिकल पेस्ट करें — AI इसे SEO-फ्रेंडली बना देगा...'
+                    : 'स्कोर, तापमान, आँकड़े, या बुनियादी तथ्य यहाँ पेस्ट करें...'
+                  }
+                  className="h-48 w-full resize-y rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-3 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
 

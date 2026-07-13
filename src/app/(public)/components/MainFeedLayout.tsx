@@ -3,6 +3,8 @@ import { InfiniteArticleFeed } from "./InfiniteArticleFeed";
 import { TrendingPromoRail } from "./TrendingPromoRail";
 import { getInfiniteFeed } from "@/lib/services/public-queries";
 import { AdBanner } from "./AdBanner";
+import WeatherWidget from "./WeatherWidget";
+import CricketWidget from "./CricketWidget";
 
 export async function MainFeedLayout() {
   const initialFeed = await getInfiniteFeed(undefined, 10);
@@ -23,8 +25,10 @@ export async function MainFeedLayout() {
           />
         </main>
 
-        {/* Right Rail - Trending Promo */}
-        <aside className="lg:col-span-3 space-y-6">
+        {/* Right Rail */}
+        <aside className="lg:col-span-3 space-y-5">
+          <WeatherWidget city="Noida" />
+          <CricketWidget />
           <TrendingPromoRail />
           <AdBanner slotName="homepage-sidebar" />
         </aside>
@@ -32,3 +36,4 @@ export async function MainFeedLayout() {
     </div>
   );
 }
+

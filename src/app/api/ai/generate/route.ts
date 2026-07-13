@@ -40,6 +40,9 @@ export async function POST(req: Request) {
       case "earnings":
         systemPrompt += `\n\nटेम्पलेट शैली: कॉर्पोरेट आय रिपोर्ट। राजस्व, प्रति शेयर आय, गाइडेंस और बाजार प्रतिक्रिया पर ध्यान दें। औपचारिक वित्तीय पत्रकारिता शब्दावली का उपयोग करें।`;
         break;
+      case "seo":
+        systemPrompt += `\n\nटेम्पलेट शैली: SEO ऑप्टिमाइज़ेशन। आपको एक पूरा हिंदी लेख दिया जाएगा। आपका काम है:\n1. मूल सामग्री और तथ्यों को बिल्कुल न बदलें\n2. हेडलाइन को और अधिक आकर्षक और कीवर्ड-समृद्ध बनाएं\n3. पहले पैराग्राफ में मुख्य कीवर्ड प्राकृतिक रूप से शामिल करें\n4. H2 सबहेडिंग जोड़ें जो स्पष्ट और खोज-योग्य हों\n5. बुलेट पॉइंट और सूचियाँ जहाँ उचित हो वहाँ जोड़ें\n6. अंत में एक संक्षिप्त "निष्कर्ष" या "मुख्य बिंदु" सेक्शन जोड़ें\nपूरा HTML आउटपुट दें।`;
+        break;
       default:
         systemPrompt += `\n\nटेम्पलेट शैली: सामान्य समाचार रिपोर्ट। सबसे महत्वपूर्ण तथ्यों को पहले रखें (उल्टे पिरामिड शैली: कौन, क्या, कब, कहाँ, क्यों)।`;
     }
@@ -57,13 +60,15 @@ export async function POST(req: Request) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile", // Current supported model
+        model: "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Raw Data to turn into a news story:\n\n${rawData}` }
+          { role: "user", content: template === "seo"
+            ? `नीचे दिया गया लेख SEO ऑप्टिमाइज़ करें:\n\n${rawData}`
+            : `कच्चा डेटा जिसे समाचार लेख में बदलना है:\n\n${rawData}`
+          }
         ],
-        temperature: 0.3, // Low temperature for factual reporting
-        max_tokens: 1024
+        temperature: 0.3,
       })
     });
 
