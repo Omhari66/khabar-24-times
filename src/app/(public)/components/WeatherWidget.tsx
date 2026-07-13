@@ -66,7 +66,7 @@ export default function WeatherWidget({ city = "Noida" }: { city?: string }) {
   const [aqiLevel] = useState(4); // Simulated AQI (0-5 index)
 
   useEffect(() => {
-    fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`)
+    fetch(`/api/weather?city=${encodeURIComponent(city)}`)
       .then((r) => r.json())
       .then((d) => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
