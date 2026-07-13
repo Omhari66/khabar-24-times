@@ -763,14 +763,16 @@ export default function ArticleForm({
                     Insert story brief prompt
                   </button>
                 )}
-                <button
-                  type="button"
-                  onClick={() => setIsAiModalOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-3 py-1.5 text-xs font-semibold text-indigo-900 transition hover:bg-indigo-200"
-                >
-                  <Sparkles size={13} className="text-indigo-600" />
-                  AI Assistant
-                </button>
+                {mode === "admin" && (
+                  <button
+                    type="button"
+                    onClick={() => setIsAiModalOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-3 py-1.5 text-xs font-semibold text-indigo-900 transition hover:bg-indigo-200"
+                  >
+                    <Sparkles size={13} className="text-indigo-600" />
+                    AI Assistant
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1206,7 +1208,7 @@ export default function ArticleForm({
                 <div className="mt-4 border-t border-slate-200 pt-4">
                   <h3 className="mb-2 text-sm font-bold text-slate-700">Preview</h3>
                   <div 
-                    className="max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm prose prose-sm max-w-none"
+                    className="max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-5 text-[15px] leading-relaxed text-slate-800 [&>p]:mb-3 [&>h2]:font-black [&>h2]:mb-3 [&>h2]:text-xl [&>h3]:font-bold [&>h3]:mb-2 [&>h3]:text-lg [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-3 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:mb-3"
                     dangerouslySetInnerHTML={{ __html: aiGeneratedHtml }}
                   />
                   <div className="mt-4 flex justify-end">
