@@ -181,7 +181,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
 
           {article.coverImageUrl && (
-            <figure className="w-full border-b border-structural bg-slate-50 flex justify-center">
+            <figure className="w-full border-b border-structural bg-slate-50 flex flex-col items-center justify-center">
               <div className="relative w-full max-h-[70vh] flex justify-center overflow-hidden">
                 <Image
                   src={article.coverImageUrl}
@@ -195,7 +195,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 />
               </div>
               {(article.coverImageCaption || article.photographerCredit) && (
-                <figcaption className="px-6 md:px-8 py-3 bg-surface-muted text-xs font-sans text-text-secondary border-t border-structural flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <figcaption className="w-full px-6 md:px-8 py-3 bg-surface-muted text-xs font-sans text-text-secondary border-t border-structural flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <span className="italic">{article.coverImageCaption}</span>
                   {article.photographerCredit && (
                     <span className="font-semibold uppercase tracking-wider whitespace-nowrap">

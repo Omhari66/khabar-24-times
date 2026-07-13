@@ -37,8 +37,8 @@ export default async function HomePage() {
   ] = await Promise.all([
     // Hero Story (Featured)
     prisma.article.findFirst({
-      where: { status: "PUBLISHED", featured: true },
-      orderBy: { publishedAt: "desc" },
+      where: { status: "PUBLISHED" },
+      orderBy: [{ featured: "desc" }, { publishedAt: "desc" }],
       include: ARTICLE_INCLUDE,
     }),
     // Breaking News
@@ -47,10 +47,10 @@ export default async function HomePage() {
       orderBy: { publishedAt: "desc" },
       take: 5,
     }),
-    // Trending / Editor's Pick as Top Headlines
+    // Trending / Editor's Pick as Top Headlines (fallback to newest)
     prisma.article.findMany({
-      where: { status: "PUBLISHED", OR: [{ trending: true }, { editorsPick: true }] },
-      orderBy: { publishedAt: "desc" },
+      where: { status: "PUBLISHED" },
+      orderBy: [{ editorsPick: "desc" }, { trending: "desc" }, { publishedAt: "desc" }],
       take: 6,
       include: ARTICLE_INCLUDE,
     }),
@@ -138,7 +138,7 @@ export default async function HomePage() {
               Top Stories
             </h2>
             <div className="flex-1 bg-slate-50">
-              <TopStoriesGrid articles={topHeadlines} />
+              <TopStoriesGrid articles={topHeadlines.filter(a => a.id !== featuredArticle?.id).slice(0, 5)} />
             </div>
           </aside>
         </section>

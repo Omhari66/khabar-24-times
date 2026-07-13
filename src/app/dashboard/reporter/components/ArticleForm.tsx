@@ -1152,24 +1152,24 @@ export default function ArticleForm({
       {/* AI Assistant Modal */}
       {isAiModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
-              <h2 className="flex items-center gap-2 text-lg font-bold text-slate-800">
-                <Sparkles className="text-indigo-600" size={20} />
+          <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 px-6 py-4">
+              <h2 className="flex items-center gap-2 text-lg font-bold text-slate-800 dark:text-slate-100">
+                <Sparkles className="text-indigo-600 dark:text-indigo-400" size={20} />
                 AI Story Generator
               </h2>
-              <button onClick={() => setIsAiModalOpen(false)} className="text-slate-400 hover:text-slate-700">
+              <button onClick={() => setIsAiModalOpen(false)} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
                 <XCircle size={24} />
               </button>
             </div>
 
             <div className="p-6 space-y-4">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Story Type</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Story Type</label>
                 <select
                   value={aiTemplate}
                   onChange={(e) => setAiTemplate(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 p-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 >
                   <option value="general">General News Report</option>
                   <option value="sports">Sports Match / Score</option>
@@ -1179,12 +1179,12 @@ export default function ArticleForm({
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Raw Facts & Data</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Raw Facts & Data</label>
                 <textarea
                   value={aiRawData}
                   onChange={(e) => setAiRawData(e.target.value)}
                   placeholder="Paste scores, temperatures, statistics, or basic facts here..."
-                  className="h-32 w-full resize-none rounded-lg border border-slate-300 p-3 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="h-32 w-full resize-none rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-3 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
 
@@ -1207,10 +1207,10 @@ export default function ArticleForm({
               </div>
 
               {aiGeneratedHtml && (
-                <div className="mt-4 border-t border-slate-200 pt-4">
-                  <h3 className="mb-2 text-sm font-bold text-slate-700">Preview</h3>
+                <div className="mt-4 border-t border-slate-200 dark:border-slate-800 pt-4">
+                  <h3 className="mb-2 text-sm font-bold text-slate-700 dark:text-slate-200">Preview</h3>
                   <div 
-                    className="max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-5 text-[15px] leading-relaxed text-slate-800 [&>p]:mb-3 [&>h2]:font-black [&>h2]:mb-3 [&>h2]:text-xl [&>h3]:font-bold [&>h3]:mb-2 [&>h3]:text-lg [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-3 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:mb-3"
+                    className="max-h-60 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-5 text-[15px] leading-relaxed text-slate-800 dark:text-slate-200 [&>p]:mb-3 [&>h2]:font-black [&>h2]:mb-3 [&>h2]:text-xl [&>h3]:font-bold [&>h3]:mb-2 [&>h3]:text-lg [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-3 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:mb-3"
                     dangerouslySetInnerHTML={{ __html: aiGeneratedHtml }}
                   />
                   <div className="mt-4 flex justify-end">
