@@ -11,6 +11,7 @@ import { ArticleSummaryBox } from "../../components/ArticleSummaryBox";
 import ArticleComments from "../../components/ArticleComments";
 import CopyProtection from "../../components/CopyProtection";
 import { AdBanner } from "../../components/AdBanner";
+import { ArticleShareButtons } from "../../components/ArticleShareButtons";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -55,13 +56,54 @@ export async function generateMetadata({
   if (!article) return { title: "Article Not Found" };
 
   const description = extractPlainText(article.content, 160);
+  const ogImages = article.coverImageUrl
+    ? [{ url: article.coverImageUrl, width: 1200, height: 630, alt: article.title }]
+    : [{ url: "/og-image.jpg", width: 1200, height: 630, alt: article.title }];
+
   return {
     title: article.title,
     description,
+    keywords: [
+      article.category.name,
+      "India News",
+      "Breaking News",
+      "Khabar 24 Times",
+      ...(article.author?.name ? [article.author.name] : []),
+    ],
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+    alternates: {
+      canonical: `/article/${article.slug}`,
+    },
     openGraph: {
       title: article.title,
       description,
-      images: article.coverImageUrl ? [article.coverImageUrl] : [],
+      url: `https://khabar24times.in/article/${article.slug}`,
+      siteName: "Khabar 24 Times",
+      locale: "en_IN",
+      type: "article",
+      publishedTime: article.publishedAt
+        ? new Date(article.publishedAt).toISOString()
+        : new Date(article.createdAt).toISOString(),
+      modifiedTime: new Date(article.updatedAt).toISOString(),
+      authors: article.author?.name
+        ? [`https://khabar24times.in`]
+        : undefined,
+      images: ogImages,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description,
+      images: ogImages.map((img) => img.url),
     },
   };
 }
@@ -121,13 +163,30 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     "headline": article.title,
-    "image": article.coverImageUrl ? [article.coverImageUrl] : [],
+    "description": extractPlainText(article.content, 160),
+    "image": article.coverImageUrl ? [article.coverImageUrl] : ["https://khabar24times.in/og-image.jpg"],
     "datePublished": article.publishedAt ? new Date(article.publishedAt).toISOString() : new Date(article.createdAt).toISOString(),
     "dateModified": new Date(article.updatedAt).toISOString(),
     "author": [{
       "@type": "Person",
-      "name": article.author?.name ?? "Khabar 24 Times Desk"
-    }]
+      "name": article.author?.name ?? "Khabar 24 Times Desk",
+      "url": "https://khabar24times.in"
+    }],
+    "publisher": {
+      "@type": "Organization",
+      "name": "Khabar 24 Times",
+      "url": "https://khabar24times.in",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://khabar24times.in/logo.png",
+        "width": 200,
+        "height": 200
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://khabar24times.in/article/${article.slug}`
+    }
   };
 
   return (
@@ -214,6 +273,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 <TiptapRenderer content={article.content} />
               </div>
             </CopyProtection>
+          </div>
+
+          {/* ── Social Share Bar (after article body) ── */}
+          <div className="px-6 md:px-8 py-5 border-t border-structural bg-surface-muted">
+            <ArticleShareButtons title={article.title} slug={article.slug} />
           </div>
 
           {/* Comments Section */}

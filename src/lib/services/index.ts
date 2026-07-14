@@ -17,3 +17,5 @@ export { AssignmentService } from "@/lib/services/assignment-service";
 export { NotificationService } from "@/lib/services/notification-service";
 export { WorkflowService } from "@/lib/services/workflow-service";
 export { CalendarService } from "@/lib/services/calendar-service";
+export { SocialPostService, socialPostService } from "@/lib/services/social-post-service";
+

@@ -4,6 +4,7 @@ import { AuditService } from "./audit-service";
 import { NotificationService } from "./notification-service";
 import { NotFoundError } from "@/lib/errors";
 import { ArticleStatus } from "@prisma/client";
+import { socialPostService } from "./social-post-service";
 
 export class WorkflowService extends ApplicationService {
   constructor(
@@ -50,6 +51,14 @@ export class WorkflowService extends ApplicationService {
       );
     }
 
+    // Trigger auto-posting when transitioning to PUBLISHED
+    if (targetStatus === ArticleStatus.PUBLISHED && previousStatus !== ArticleStatus.PUBLISHED) {
+      socialPostService.autoPost(article.title, article.slug).catch((err) => {
+        console.error("[WorkflowService] Failed to auto-post to social networks:", err);
+      });
+    }
+
     return updated;
   }
 }
+

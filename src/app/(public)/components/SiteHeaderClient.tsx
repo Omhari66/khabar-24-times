@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, Search, X, ChevronRight } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { SOCIAL_LINKS } from "@/lib/constants";
 
 type SubCategory = {
   id: string;
@@ -83,9 +84,10 @@ export default function SiteHeaderClient({
               {new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
             </div>
             <div className="flex gap-4">
-              <Link href="#" className="hover:text-white transition">Facebook</Link>
-              <Link href="#" className="hover:text-white transition">Twitter</Link>
-              <Link href="#" className="hover:text-white transition">YouTube</Link>
+              <a href={SOCIAL_LINKS.facebook} target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Facebook</a>
+              <a href={SOCIAL_LINKS.twitter} target="_blank" rel="noopener noreferrer" className="hover:text-white transition">X / Twitter</a>
+              <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Instagram</a>
+              <a href={SOCIAL_LINKS.youtube} target="_blank" rel="noopener noreferrer" className="hover:text-white transition">YouTube</a>
             </div>
           </div>
         </div>
