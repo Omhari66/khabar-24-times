@@ -2,6 +2,7 @@ import { ApplicationService } from "./base/application-service";
 import { ArticleRepository } from "@/lib/repositories/article-repository";
 import { ConflictError, NotFoundError } from "@/lib/errors";
 import { Prisma } from "@prisma/client";
+import { socialPostService } from "./social-post-service";
 
 export class ArticleService extends ApplicationService {
   constructor(private readonly articleRepository: ArticleRepository) {
@@ -33,7 +34,15 @@ export class ArticleService extends ApplicationService {
     if (existing) {
       throw new ConflictError("An article with this slug already exists");
     }
-    return this.articleRepository.create(input);
+    const created = await this.articleRepository.create(input);
+
+    if (created.status === "PUBLISHED") {
+      socialPostService.autoPost(created.title, created.slug).catch((err) => {
+        console.error("[ArticleService] Failed to auto-post to social networks:", err);
+      });
+    }
+
+    return created;
   }
 
   async updateArticle(id: string, input: Prisma.ArticleUncheckedUpdateInput) {
@@ -49,7 +58,15 @@ export class ArticleService extends ApplicationService {
       }
     }
 
-    return this.articleRepository.update(id, input);
+    const updated = await this.articleRepository.update(id, input);
+
+    if (input.status === "PUBLISHED" && article.status !== "PUBLISHED") {
+      socialPostService.autoPost(updated.title, updated.slug).catch((err) => {
+        console.error("[ArticleService] Failed to auto-post to social networks:", err);
+      });
+    }
+
+    return updated;
   }
 
   async softDeleteArticle(id: string) {

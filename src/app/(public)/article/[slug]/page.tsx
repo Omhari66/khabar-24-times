@@ -56,11 +56,26 @@ export async function generateMetadata({
   if (!article) return { title: "Article Not Found" };
 
   const description = extractPlainText(article.content, 160);
-  const ogImages = article.coverImageUrl
-    ? [{ url: article.coverImageUrl, width: 1200, height: 630, alt: article.title }]
-    : [{ url: "/og-image.jpg", width: 1200, height: 630, alt: article.title }];
+  
+  // Resolve absolute URL for WhatsApp / Facebook scraper compatibility
+  let imageUrl = "https://khabar24times.in/og-image.jpg";
+  if (article.coverImageUrl) {
+    imageUrl = article.coverImageUrl.startsWith("http")
+      ? article.coverImageUrl
+      : `https://khabar24times.in${article.coverImageUrl.startsWith("/") ? "" : "/"}${article.coverImageUrl}`;
+  }
+
+  const ogImages = [
+    {
+      url: imageUrl,
+      width: 1200,
+      height: 630,
+      alt: article.title,
+    },
+  ];
 
   return {
+    metadataBase: new URL("https://khabar24times.in"),
     title: article.title,
     description,
     keywords: [
@@ -103,7 +118,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: article.title,
       description,
-      images: ogImages.map((img) => img.url),
+      images: [imageUrl],
     },
   };
 }
