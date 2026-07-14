@@ -1159,8 +1159,8 @@ export default function ArticleForm({
       {/* AI Assistant Modal */}
       {isAiModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 px-6 py-4">
+          <div className="w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 px-6 py-4 shrink-0">
               <h2 className="flex items-center gap-2 text-lg font-bold text-slate-800 dark:text-slate-100">
                 <Sparkles className="text-indigo-600 dark:text-indigo-400" size={20} />
                 AI Story Generator
@@ -1170,7 +1170,7 @@ export default function ArticleForm({
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Story Type</label>
                 <select
