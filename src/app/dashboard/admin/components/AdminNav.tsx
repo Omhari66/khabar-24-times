@@ -12,6 +12,7 @@ export default function AdminNav() {
   const links = [
     { href: "/dashboard/editor", label: "Review Queue" },
     ...(role === "ADMIN" ? [{ href: "/dashboard/admin", label: "User Management" }] : []),
+    ...(role === "ADMIN" ? [{ href: "/dashboard/admin/reporters", label: "🪪 Reporter Cards" }] : []),
     { href: "/dashboard/admin/homepage", label: "Homepage Builder" },
     { href: "/dashboard/admin/kanban", label: "Kanban Board" },
     { href: "/dashboard/admin/planning", label: "Planning Board" },

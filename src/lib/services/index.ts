@@ -18,4 +18,5 @@ export { NotificationService } from "@/lib/services/notification-service";
 export { WorkflowService } from "@/lib/services/workflow-service";
 export { CalendarService } from "@/lib/services/calendar-service";
 export { SocialPostService, socialPostService } from "@/lib/services/social-post-service";
+export { ReporterCardService } from "@/lib/services/reporter-card-service";
 

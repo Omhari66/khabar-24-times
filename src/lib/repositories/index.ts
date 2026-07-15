@@ -11,3 +11,4 @@ export { GalleryRepository } from "@/lib/repositories/gallery-repository";
 export { AssignmentRepository } from "@/lib/repositories/assignment-repository";
 export { NotificationRepository } from "@/lib/repositories/notification-repository";
 export { CalendarRepository } from "@/lib/repositories/calendar-repository";
+export { ReporterCardRepository } from "@/lib/repositories/reporter-card-repository";

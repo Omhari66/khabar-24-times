@@ -498,3 +498,51 @@ model SystemHealthLog {
   metadata  Json?
   createdAt DateTime @default(now())
 }
+
+enum ReporterCardStatus {
+  ACTIVE
+  SUSPENDED
+  EXPIRED
+}
+
+model Reporter {
+  id               String             @id @default(uuid())
+  uuid             String             @unique @default(uuid())
+  reporterId       String             @unique // Format: BS-[Year][4-Digit Serial] (e.g., BS-20260001)
+  fullName         String
+  photo            String             // Cloudinary secure URL
+  email            String             @unique
+  phone            String             @unique
+  bloodGroup       String
+  designation      String
+  department       String
+  state            String
+  district         String
+  officeAddress    String
+  joiningDate      DateTime           @default(now())
+  validTill        DateTime
+  status           ReporterCardStatus @default(ACTIVE)
+  dateOfBirth      DateTime
+  aadhaarLast4     String
+  emergencyContact String
+  emergencyPhone   String
+  qrToken          String             @unique // 16-character secure random token
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  createdBy        String             // User ID of Admin who created the reporter
+
+  verificationLogs VerificationLog[]
+}
+
+model VerificationLog {
+  id         String   @id @default(uuid())
+  reporterId String
+  reporter   Reporter @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  ipAddress  String?
+  country    String?
+  city       String?
+  browser    String?
+  os         String?
+  device     String?
+  createdAt  DateTime @default(now())
+}
