@@ -22,7 +22,7 @@ interface PdfGeneratorInput {
 
 /**
  * Downloads an image from a URL and returns it as a standard PNG ArrayBuffer.
- * Decodes the image via browser Image API and draws to canvas to ensure 100% compatibility with pdf-lib.
+ * Fetches via direct HTTP GET (mode: cors, no-cache) and draws to canvas using Object URL to bypass browser CORS cache conflicts.
  */
 async function fetchImageBuffer(url: string, siteUrl: string): Promise<ArrayBuffer | null> {
   try {
@@ -44,48 +44,60 @@ async function fetchImageBuffer(url: string, siteUrl: string): Promise<ArrayBuff
     let absoluteUrl = url;
     if (url.startsWith("/")) {
       absoluteUrl = `${siteUrl}${url}`;
-    } else if (url.startsWith("http")) {
-      // Append cache-buster to prevent cached non-CORS response
-      const connector = url.includes("?") ? "&" : "?";
-      absoluteUrl = `${url}${connector}cb=${Date.now()}`;
     }
 
-    // 3. Decode image and redraw as clean PNG
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = absoluteUrl;
-
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = () => reject(new Error("Failed to load image element"));
-    });
-
-    const canvas = document.createElement("canvas");
-    canvas.width = img.naturalWidth || img.width || 200;
-    canvas.height = img.naturalHeight || img.height || 250;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return null;
-
-    ctx.drawImage(img, 0, 0);
-
-    const blob = await new Promise<Blob | null>((resolve) => {
-      canvas.toBlob((b) => resolve(b), "image/png");
-    });
-
-    if (!blob) return null;
-    return await blob.arrayBuffer();
-  } catch (error) {
-    console.error("Failed to fetch/decode image for PDF, attempting direct fetch:", error);
-    try {
-      let absoluteUrl = url;
-      if (url.startsWith("/")) {
-        absoluteUrl = `${siteUrl}${url}`;
+    // 3. Fetch image bytes directly with CORS and no-cache
+    // This avoids all browser image-tag cache CORS conflicts!
+    const response = await fetch(absoluteUrl, {
+      method: "GET",
+      mode: "cors",
+      headers: {
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache"
       }
-      const res = await fetch(absoluteUrl);
-      if (res.ok) return await res.arrayBuffer();
-    } catch (fallbackError) {
-      console.error("Direct fetch fallback failed:", fallbackError);
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`);
     }
+
+    const blob = await response.blob();
+    const arrayBuffer = await blob.arrayBuffer();
+
+    // 4. Decode via Canvas to ensure strict PNG format compatibility with pdf-lib
+    const blobUrl = URL.createObjectURL(blob);
+    try {
+      const img = new Image();
+      img.src = blobUrl;
+
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = () => reject(new Error("Failed to load blob image"));
+      });
+
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth || img.width || 200;
+      canvas.height = img.naturalHeight || img.height || 250;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        const pngBlob = await new Promise<Blob | null>((resolve) => {
+          canvas.toBlob((b) => resolve(b), "image/png");
+        });
+        if (pngBlob) {
+          const pngBuffer = await pngBlob.arrayBuffer();
+          URL.revokeObjectURL(blobUrl);
+          return pngBuffer;
+        }
+      }
+    } catch (canvasErr) {
+      console.warn("Canvas PNG transcoding failed, returning direct fetched buffer:", canvasErr);
+    }
+
+    URL.revokeObjectURL(blobUrl);
+    return arrayBuffer;
+  } catch (error) {
+    console.error("Failed to fetch/decode image for PDF:", error);
     return null;
   }
 }
