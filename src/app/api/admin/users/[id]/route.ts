@@ -36,7 +36,7 @@ export async function PATCH(
 
     // Handle role updates
     if (role) {
-      if (!["REPORTER", "EDITOR", "ADMIN"].includes(role)) {
+      if (!["USER", "REPORTER", "EDITOR", "ADMIN"].includes(role)) {
         return NextResponse.json({ error: "Invalid role specified." }, { status: 400 });
       }
 

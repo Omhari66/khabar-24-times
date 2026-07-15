@@ -21,11 +21,30 @@ export default async function AdminDashboardPage() {
   }
 
   // Fetch all team members (excluding standard users and passwords)
-  const users = await prisma.user.findMany({
+  const teamUsers = await prisma.user.findMany({
     where: {
       role: {
         in: ["REPORTER", "EDITOR", "ADMIN"],
       },
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      _count: {
+        select: { articles: true },
+      },
+    },
+    orderBy: {
+      email: "asc",
+    },
+  });
+
+  // Fetch site users (subscribers / Google sign-ins) who can be promoted
+  const siteUsers = await prisma.user.findMany({
+    where: {
+      role: "USER",
     },
     select: {
       id: true,
@@ -47,7 +66,7 @@ export default async function AdminDashboardPage() {
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">User Management</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Manage your editorial team members.
+            Manage your editorial team members and site users.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
@@ -60,7 +79,11 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      <UserTable initialUsers={users} currentUserId={session.user.id} />
+      <UserTable
+        initialUsers={teamUsers}
+        initialSiteUsers={siteUsers}
+        currentUserId={session.user.id}
+      />
     </div>
   );
 }
