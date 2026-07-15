@@ -68,8 +68,8 @@ export default function ReportersDashboard() {
         if (!res.ok) throw new Error("Failed to load analytics");
         const json = await res.json();
         setData(json);
-      } catch (err: any) {
-        setError(err.message || "Something went wrong");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Something went wrong");
       } finally {
         setLoading(false);
       }
@@ -403,7 +403,7 @@ function StatCard({
 }: {
   title: string;
   value: number;
-  icon: any;
+  icon: React.ElementType;
   color: "blue" | "green" | "orange" | "red";
   sub: string;
 }) {
