@@ -3,7 +3,7 @@ import { Source_Serif_4, Work_Sans, Archivo_Narrow } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 import { Analytics } from "@vercel/analytics/next";
-import Script from "next/script";
+
 
 const sourceSerif = Source_Serif_4({
   subsets: ["latin"],
@@ -120,25 +120,29 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        {gaId && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${gaId}');
+                `,
+              }}
+            />
+          </>
+        )}
+      </head>
       <body
         className={`${sourceSerif.variable} ${workSans.variable} ${archivoNarrow.variable} antialiased`}
       >
-        {gaId && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-              strategy="afterInteractive"
-            />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${gaId}');
-              `}
-            </Script>
-          </>
-        )}
         <Providers>{children}</Providers>
         <Analytics />
       </body>
