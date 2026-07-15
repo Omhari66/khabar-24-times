@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Search,
-  Filter,
   Trash2,
   Download,
   Upload,
@@ -81,7 +80,7 @@ export default function ReportersListPage() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState<any>(null);
+  const [importResult, setImportResult] = useState<{ successCount: number; failCount: number; errors: string[] } | null>(null);
 
   // Trigger Data Fetch
   const fetchReporters = async () => {
@@ -101,8 +100,9 @@ export default function ReportersListPage() {
       const data = await res.json();
       setReporters(data.reporters);
       setTotal(data.total);
-    } catch (err: any) {
-      setError(err.message || "Failed to load database");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Failed to load database";
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -118,6 +118,7 @@ export default function ReportersListPage() {
     if (state) urlParams.set("state", state);
     urlParams.set("page", page.toString());
     router.replace(`/dashboard/admin/reporters/list?${urlParams.toString()}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, status, dept, state, page]);
 
   // Bulk Operations
@@ -154,8 +155,9 @@ export default function ReportersListPage() {
       setSelectedIds([]);
       fetchReporters();
       alert("Selected reporter card(s) deleted successfully.");
-    } catch (err: any) {
-      alert(err.message || "Failed to execute bulk deletion");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Failed to execute bulk deletion";
+      alert(errorMsg);
     } finally {
       setBulkDeleting(false);
     }
@@ -169,8 +171,9 @@ export default function ReportersListPage() {
       });
       if (!res.ok) throw new Error("Failed to change card status");
       fetchReporters();
-    } catch (err: any) {
-      alert(err.message || "Failed to update status");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Failed to update status";
+      alert(errorMsg);
     }
   };
 
@@ -192,8 +195,9 @@ export default function ReportersListPage() {
       setNewValidTill("");
       fetchReporters();
       alert("Reporter card renewed successfully.");
-    } catch (err: any) {
-      alert(err.message || "Failed to renew card");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Failed to renew card";
+      alert(errorMsg);
     } finally {
       setRenewing(false);
     }
@@ -232,8 +236,9 @@ export default function ReportersListPage() {
       setImportResult(json);
       fetchReporters();
       setImportFile(null);
-    } catch (err: any) {
-      alert(err.message || "CSV Import Failed");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "CSV Import Failed";
+      alert(errorMsg);
     } finally {
       setImporting(false);
     }
@@ -253,7 +258,7 @@ export default function ReportersListPage() {
         siteUrl
       );
 
-      const blob = new Blob([pdfBytes as any], { type: "application/pdf" });
+      const blob = new Blob([pdfBytes as BlobPart], { type: "application/pdf" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = `BS_Card_${reporter.reporterId}.pdf`;

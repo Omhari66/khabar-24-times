@@ -39,8 +39,8 @@ export default function VerificationLogsPage() {
       const data = await res.json();
       setLogs(data.logs);
       setTotal(data.total);
-    } catch (err: any) {
-      setError(err.message || "Failed to load scan logs");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load scan logs");
     } finally {
       setLoading(false);
     }
@@ -48,6 +48,7 @@ export default function VerificationLogsPage() {
 
   useEffect(() => {
     fetchLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   const totalPages = Math.ceil(total / limit) || 1;

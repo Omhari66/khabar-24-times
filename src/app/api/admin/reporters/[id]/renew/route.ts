@@ -20,9 +20,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const updated = await reporterCardService.renewCard(params.id, validTill, session.user.id);
 
     return NextResponse.json(updated);
-  } catch (error: any) {
-    if (error.statusCode) {
-      return NextResponse.json({ error: error.message }, { status: error.statusCode });
+  } catch (error) {
+    const err = error as { statusCode?: number; message?: string };
+    if (err.statusCode) {
+      return NextResponse.json({ error: err.message }, { status: err.statusCode });
     }
     console.error("Error renewing reporter card:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

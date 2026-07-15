@@ -74,8 +74,9 @@ export async function GET(req: Request, { params }: { params: { token: string } 
         updatedAt: result.reporter.updatedAt,
       },
     });
-  } catch (error: any) {
-    if (error.statusCode === 404) {
+  } catch (error) {
+    const err = error as { statusCode?: number };
+    if (err.statusCode === 404) {
       return NextResponse.json({ error: "Reporter not found", verified: false, status: "NOT_FOUND" }, { status: 404 });
     }
     console.error("Verification error:", error);

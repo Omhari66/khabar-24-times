@@ -3,16 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  CreditCard,
   Upload,
   User,
   ArrowLeft,
   Loader2,
-  Calendar,
-  Phone,
-  Mail,
-  MapPin,
-  Heart,
   ShieldAlert,
   Save,
   X,
@@ -89,8 +83,9 @@ export default function ReporterGeneratePage() {
           emergencyContact: data.emergencyContact,
           emergencyPhone: data.emergencyPhone,
         });
-      } catch (err: any) {
-        alert(err.message || "Failed to load reporter profile");
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : "Failed to load reporter profile";
+        alert(errorMsg);
         router.push("/dashboard/admin/reporters/list");
       } finally {
         setFetching(false);
@@ -98,7 +93,7 @@ export default function ReporterGeneratePage() {
     }
 
     loadReporter();
-  }, [editId]);
+  }, [editId, router]);
 
   // Image Selection Handler (Triggers Cropping Modal)
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -248,15 +243,16 @@ export default function ReporterGeneratePage() {
           setFormData((prev) => ({ ...prev, photo: data.secure_url }));
           return;
         }
-      } catch (uploadError: any) {
+      } catch (uploadError) {
         console.warn("Cloudinary upload failed, falling back to local Base64 URL:", uploadError);
       }
 
       // Automatically fall back to local Base64 data URL if Cloudinary fails or is bypassed
       setFormData((prev) => ({ ...prev, photo: base64DataUrl }));
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      alert(`Image processing failed: ${error.message || error}`);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      alert(`Image processing failed: ${errorMsg}`);
     } finally {
       setUploading(false);
       setCropImageUrl("");
@@ -292,8 +288,9 @@ export default function ReporterGeneratePage() {
 
       alert(editId ? "Reporter card updated successfully!" : "New reporter card created successfully!");
       router.push("/dashboard/admin/reporters/list");
-    } catch (err: any) {
-      alert(err.message || "Failed to process form");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Failed to process form";
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }

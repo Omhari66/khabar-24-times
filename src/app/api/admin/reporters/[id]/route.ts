@@ -37,9 +37,10 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 
     const reporter = await reporterCardService.getReporter(params.id);
     return NextResponse.json(reporter);
-  } catch (error: any) {
-    if (error.statusCode) {
-      return NextResponse.json({ error: error.message }, { status: error.statusCode });
+  } catch (error) {
+    const err = error as { statusCode?: number; message?: string };
+    if (err.statusCode) {
+      return NextResponse.json({ error: err.message }, { status: err.statusCode });
     }
     console.error("Error fetching reporter card:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
@@ -57,9 +58,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const updated = await reporterCardService.updateReporter(params.id, body, session.user.id);
 
     return NextResponse.json(updated);
-  } catch (error: any) {
-    if (error.statusCode) {
-      return NextResponse.json({ error: error.message }, { status: error.statusCode });
+  } catch (error) {
+    const err = error as { statusCode?: number; message?: string };
+    if (err.statusCode) {
+      return NextResponse.json({ error: err.message }, { status: err.statusCode });
     }
     console.error("Error updating reporter card:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
@@ -75,9 +77,10 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
 
     const result = await reporterCardService.deleteReporter(params.id, session.user.id);
     return NextResponse.json(result);
-  } catch (error: any) {
-    if (error.statusCode) {
-      return NextResponse.json({ error: error.message }, { status: error.statusCode });
+  } catch (error) {
+    const err = error as { statusCode?: number; message?: string };
+    if (err.statusCode) {
+      return NextResponse.json({ error: err.message }, { status: err.statusCode });
     }
     console.error("Error deleting reporter card:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

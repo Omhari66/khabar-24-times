@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { User, Shield, Mail, Calendar, Key, AlertCircle } from "lucide-react";
+import { User, Shield, Mail, Key, AlertCircle } from "lucide-react";
 
 export default function ReporterProfilePage() {
   const { data: session } = useSession();

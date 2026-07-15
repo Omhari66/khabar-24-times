@@ -32,9 +32,10 @@ export async function POST(req: Request) {
 
     const result = await reporterCardService.importReportersFromCsv(csvText, session.user.id);
     return NextResponse.json(result);
-  } catch (error: any) {
-    if (error.statusCode) {
-      return NextResponse.json({ error: error.message }, { status: error.statusCode });
+  } catch (error) {
+    const err = error as { statusCode?: number; message?: string };
+    if (err.statusCode) {
+      return NextResponse.json({ error: err.message }, { status: err.statusCode });
     }
     console.error("Error importing CSV:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
