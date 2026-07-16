@@ -163,10 +163,12 @@ export default function UserTable({
 
   const renderUserRow = (user: User, isSiteUser = false) => {
     const initials = (user.name || user.email)
+      .trim()
       .split(" ")
+      .filter(Boolean)
       .slice(0, 2)
       .map((w) => w[0].toUpperCase())
-      .join("");
+      .join("") || "?";
     const isSelf = user.id === currentUserId;
 
     return (
