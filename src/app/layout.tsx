@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Source_Serif_4, Work_Sans, Archivo_Narrow } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import Providers from "./providers";
 import { Analytics } from "@vercel/analytics/next";
