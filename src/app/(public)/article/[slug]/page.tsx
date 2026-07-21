@@ -60,7 +60,7 @@ export async function generateMetadata({
   // Resolve absolute URL & optimize for WhatsApp / Facebook scraper compatibility (<300KB limit)
   let imageUrl = "https://khabar24times.in/og-image.jpg";
   if (article.coverImageUrl) {
-    let rawUrl = article.coverImageUrl.startsWith("http")
+    const rawUrl = article.coverImageUrl.startsWith("http")
       ? article.coverImageUrl
       : `https://khabar24times.in${article.coverImageUrl.startsWith("/") ? "" : "/"}${article.coverImageUrl}`;
 
