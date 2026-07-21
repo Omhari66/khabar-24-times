@@ -37,8 +37,8 @@ export async function GET(req: Request, { params }: { params: { token: string } 
 
     // Rate Limiting could be added here; for now, retrieve client metadata
     const ipAddress = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || req.headers.get("x-real-ip") || "127.0.0.1";
-    const country = req.headers.get("x-vercel-ip-country") || "India";
-    const city = req.headers.get("x-vercel-ip-city") || "New Delhi";
+    const country = req.headers.get("cf-ipcountry") || req.headers.get("x-vercel-ip-country") || "India";
+    const city = req.headers.get("cf-ipcity") || req.headers.get("x-vercel-ip-city") || "New Delhi";
     const uaString = req.headers.get("user-agent") || "";
     const { browser, os, device } = parseUserAgent(uaString);
 
