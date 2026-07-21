@@ -68,9 +68,11 @@ export async function generateMetadata({
   const ogImages = [
     {
       url: imageUrl,
+      secureUrl: imageUrl,
       width: 1200,
       height: 630,
       alt: article.title,
+      type: imageUrl.endsWith(".png") ? "image/png" : "image/jpeg",
     },
   ];
 
@@ -119,6 +121,8 @@ export async function generateMetadata({
       title: article.title,
       description,
       images: [imageUrl],
+      site: "@khabar24times",
+      creator: "@khabar24times",
     },
   };
 }

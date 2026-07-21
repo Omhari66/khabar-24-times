@@ -24,9 +24,21 @@ export function ArticleShareButtons({ title, slug }: ArticleShareButtonsProps) {
   const shareLinks = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
     twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}&via=khabar24times`,
-    whatsapp: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`,
+    whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%0A%0A${encodedUrl}`,
     // Instagram doesn't support direct URL sharing — opens the app/profile instead
     instagram: `https://www.instagram.com/khabar24times.in/`,
+  };
+
+  const handleWhatsAppShare = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (typeof navigator !== "undefined" && navigator.share) {
+      e.preventDefault();
+      navigator.share({
+        title,
+        url,
+      }).catch(() => {
+        window.open(shareLinks.whatsapp, "_blank");
+      });
+    }
   };
 
   const copyLink = async () => {
@@ -83,6 +95,7 @@ export function ArticleShareButtons({ title, slug }: ArticleShareButtonsProps) {
       <a
         id="article-share-whatsapp"
         href={shareLinks.whatsapp}
+        onClick={handleWhatsAppShare}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Share on WhatsApp"
