@@ -21,24 +21,23 @@ export function ArticleShareButtons({ title, slug }: ArticleShareButtonsProps) {
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
 
+  const whatsappUrl = `whatsapp://send?text=${encodedUrl}%0A%0A${encodedTitle}`;
+  const whatsappWebUrl = `https://api.whatsapp.com/send?text=${encodedUrl}%0A%0A${encodedTitle}`;
+
   const shareLinks = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
     twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}&via=khabar24times`,
-    whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%0A%0A${encodedUrl}`,
+    whatsapp: whatsappWebUrl,
     // Instagram doesn't support direct URL sharing — opens the app/profile instead
     instagram: `https://www.instagram.com/khabar24times.in/`,
   };
 
   const handleWhatsAppShare = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (typeof navigator !== "undefined" && navigator.share) {
-      e.preventDefault();
-      navigator.share({
-        title,
-        url,
-      }).catch(() => {
-        window.open(shareLinks.whatsapp, "_blank");
-      });
-    }
+    e.preventDefault();
+    // On mobile devices, try deep linking to WhatsApp app directly so it scrapes thumbnail
+    const isMobile = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const targetUrl = isMobile ? whatsappUrl : whatsappWebUrl;
+    window.open(targetUrl, "_blank");
   };
 
   const copyLink = async () => {

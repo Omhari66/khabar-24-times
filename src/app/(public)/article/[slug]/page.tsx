@@ -57,22 +57,28 @@ export async function generateMetadata({
 
   const description = extractPlainText(article.content, 160);
   
-  // Resolve absolute URL for WhatsApp / Facebook scraper compatibility
+  // Resolve absolute URL & optimize for WhatsApp / Facebook scraper compatibility (<300KB limit)
   let imageUrl = "https://khabar24times.in/og-image.jpg";
   if (article.coverImageUrl) {
-    imageUrl = article.coverImageUrl.startsWith("http")
+    let rawUrl = article.coverImageUrl.startsWith("http")
       ? article.coverImageUrl
       : `https://khabar24times.in${article.coverImageUrl.startsWith("/") ? "" : "/"}${article.coverImageUrl}`;
+
+    if (rawUrl.includes("res.cloudinary.com") && rawUrl.includes("/upload/")) {
+      imageUrl = rawUrl.replace("/upload/", "/upload/w_800,h_420,c_fill,q_auto,f_jpg/");
+    } else {
+      imageUrl = rawUrl;
+    }
   }
 
   const ogImages = [
     {
       url: imageUrl,
       secureUrl: imageUrl,
-      width: 1200,
-      height: 630,
+      width: 800,
+      height: 420,
       alt: article.title,
-      type: imageUrl.endsWith(".png") ? "image/png" : "image/jpeg",
+      type: "image/jpeg",
     },
   ];
 
