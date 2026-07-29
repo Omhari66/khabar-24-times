@@ -628,124 +628,187 @@ export default function ReporterGeneratePage() {
               }`}
             >
               {/* CARD FRONT */}
-              <div className="absolute inset-0 backface-hidden bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-2xl border-2 border-slate-850 p-4 flex flex-col justify-between overflow-hidden shadow-inner select-none">
-                <div className="absolute -top-12 -left-12 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl" />
-                <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-yellow-500/10 rounded-full blur-2xl" />
-
-                {/* Header Line */}
-                <div className="flex justify-between items-start border-b border-slate-800 pb-1.5">
-                  <div>
-                    <h4 className="text-[11px] font-black tracking-widest text-slate-100">
-                      KHABAR24TIMES
-                    </h4>
-                    <p className="text-[6px] font-bold text-yellow-500 uppercase tracking-widest">
-                      PRESS IDENTITY CARD
-                    </p>
-                  </div>
-                  <span className="text-[5px] bg-yellow-500 text-slate-950 font-bold px-1 rounded-full">
-                    LIVE PREVIEW
-                  </span>
+              <div className="absolute inset-0 backface-hidden bg-[#0d1b41] text-white rounded-2xl overflow-hidden shadow-inner select-none flex flex-col">
+                {/* Gold Top Bar */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#daa520]" />
+                <div className="absolute top-0 left-0 right-0 h-2.5 bg-[#050f2d] flex justify-between items-center px-2 z-10">
+                  <span className="text-[3.5px] text-[#c8d2e1]">info@khabar24times.in</span>
+                  <span className="text-[3.5px] font-bold text-[#daa520]">www.khabar24times.in</span>
                 </div>
-
-                {/* Details section */}
-                <div className="flex gap-3 my-auto items-center">
-                  {formData.photo ? (
-                    <img
-                      src={formData.photo}
-                      alt="Reporter"
-                      className="w-[72px] h-[90px] object-cover rounded border border-slate-700 shadow-lg"
-                    />
-                  ) : (
-                    <div className="w-[72px] h-[90px] rounded border border-dashed border-slate-750 bg-slate-800 flex flex-col items-center justify-center text-slate-500 gap-1">
-                      <User className="h-6 w-6 opacity-60" />
-                      <span className="text-[6px] font-semibold">NO PHOTO</span>
-                    </div>
-                  )}
-                  <div className="space-y-1 flex-1">
-                    <h5 className="text-[11.5px] font-black tracking-wide text-white leading-tight uppercase truncate max-w-[170px]">
-                      {formData.fullName || "REPORTER NAME"}
-                    </h5>
-                    <p className="text-[7.5px] font-bold text-slate-400 truncate max-w-[170px]">
-                      {formData.designation || "DESIGNATION"}
-                    </p>
-                    <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 pt-1 text-[6.5px] text-slate-355">
-                      <div>
-                        <span className="text-slate-500 block font-bold">DEPT:</span>
-                        <span className="font-semibold truncate max-w-[80px] block">
-                          {formData.department || "DEPARTMENT"}
-                        </span>
+                
+                <div className="flex-1 p-3 pt-4 relative">
+                  {/* Header Area */}
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-1.5">
+                      {/* Logo Circle */}
+                      <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center border border-[#b4141e]">
+                        <span className="text-[#b4141e] font-black text-[10px]">K</span>
                       </div>
                       <div>
-                        <span className="text-slate-500 block font-bold">BLOOD GRP:</span>
-                        <span className="font-semibold">{formData.bloodGroup}</span>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 block font-bold">REPORTER ID:</span>
-                        <span className="font-mono font-bold text-yellow-500">
-                          {editId ? "GENERATING..." : "BS-2026XXXX"}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 block font-bold">VALID TILL:</span>
-                        <span className="font-bold">
-                          {formData.validTill
-                            ? new Date(formData.validTill).toLocaleDateString("en-IN", {
-                                month: "2-digit",
-                                year: "numeric",
-                              })
-                            : "MM/YYYY"}
-                        </span>
+                        <h4 className="text-[8px] font-black text-white leading-none">KHABAR24TIMES</h4>
+                        <p className="text-[4px] text-[#c8d2e1]">Sehar Ki Har Badi Khabar App Tak</p>
                       </div>
                     </div>
+                    {/* INDIA Badge */}
+                    <div className="border border-[#daa520] bg-[#1e3264] rounded px-1.5 py-0.5">
+                      <span className="text-[#daa520] font-bold text-[5px]">INDIA</span>
+                    </div>
                   </div>
-                </div>
 
-                {/* Footer scan link */}
-                <div className="flex justify-between items-center border-t border-slate-850 pt-1 text-[5px] text-slate-500">
-                  <span className="truncate max-w-[200px]">
-                    LOCATION: {formData.district}, {formData.state}
-                  </span>
-                  <span className="font-bold text-yellow-500/80">FLIP CARD</span>
+                  {/* Title */}
+                  <div className="mt-2">
+                    <p className="text-[#daa520] font-bold text-[5px]">OFFICIAL MEDIA IDENTITY</p>
+                    <h3 className="text-white font-black text-lg leading-tight">PRESS CARD</h3>
+                    <div className="w-20 h-0.5 bg-[#daa520] mt-0.5" />
+                  </div>
+
+                  {/* Body Content */}
+                  <div className="mt-2 flex gap-3">
+                    {/* Photo Left */}
+                    <div className="relative">
+                      <div className="bg-white p-0.5 w-[60px] h-[75px]">
+                        {formData.photo ? (
+                          <img
+                            src={formData.photo}
+                            alt="Reporter"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-[#283c64] flex items-center justify-center text-white font-bold text-lg">
+                            {(formData.fullName || "?").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      {/* Stamp Overlay */}
+                      <div className="absolute -bottom-2 -right-3 w-10 h-10 opacity-90 mix-blend-screen pointer-events-none">
+                        <img src="/stamp.png" alt="Stamp" className="w-full h-full object-contain" />
+                      </div>
+                    </div>
+
+                    {/* Details Right */}
+                    <div className="flex-1 space-y-1">
+                      <h4 className="text-[11px] font-black uppercase text-white truncate max-w-[140px] leading-tight">
+                        {formData.fullName || "REPORTER NAME"}
+                      </h4>
+                      
+                      {/* Designation Pill */}
+                      <div className="inline-block bg-[#b4141e] px-1.5 py-0.5 rounded text-[6px] font-bold text-white max-w-[140px] truncate uppercase">
+                        {formData.designation || "REPORTER"}
+                      </div>
+
+                      <div className="flex items-center gap-1 mt-1 text-[5px]">
+                        <span className="font-bold text-[#daa520]">PRESS ID:</span>
+                        <span className="font-bold text-[#daa520]">{editId ? formData.reporterId : "BS-2026XXXX"}</span>
+                      </div>
+                      
+                      <div className="text-[5px] text-[#c8d2e1] truncate max-w-[140px]">
+                        {formData.district || "District"}, {formData.state || "State"}
+                      </div>
+
+                      {formData.dateOfBirth && (
+                        <div className="mt-1">
+                          <span className="text-[#daa520] font-bold text-[4px] block">DATE OF BIRTH</span>
+                          <span className="text-white font-bold text-[6px] block">
+                            {new Date(formData.dateOfBirth).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-2 gap-1 mt-1">
+                        <div>
+                          <span className="text-[#daa520] font-bold text-[4px] block">ISSUED ON</span>
+                          <span className="text-white font-bold text-[5px] block truncate">
+                            {formData.joiningDate ? new Date(formData.joiningDate).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" }) : "MM/DD/YYYY"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[#daa520] font-bold text-[4px] block">CARD VALIDITY</span>
+                          <span className="text-white font-bold text-[5px] block truncate">
+                            {formData.validTill ? new Date(formData.validTill).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" }) : "MM/DD/YYYY"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#28c850]" />
+                        <span className="text-[#28c850] font-bold text-[7px]">ACTIVE</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Signature Area */}
+                  <div className="absolute bottom-4 right-3 text-right">
+                    <img src="/signature.png" alt="Signature" className="h-5 ml-auto mix-blend-screen opacity-90" />
+                    <p className="text-[5px] font-bold text-[#c8d2e1] mt-0.5">EDITOR-IN-CHIEF</p>
+                    <p className="text-[4px] text-[#96a5b9]">Khabar24Times</p>
+                  </div>
                 </div>
               </div>
 
               {/* CARD BACK */}
-              <div className="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-2xl border-2 border-slate-850 p-4 flex flex-col justify-between overflow-hidden shadow-inner select-none">
-                <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl" />
-
-                <div>
-                  <h5 className="text-[7.5px] font-black text-yellow-500 tracking-wider mb-1">
-                    TERMS & CONDITIONS
-                  </h5>
-                  <ul className="text-[5.5px] space-y-0.5 text-slate-350 list-disc pl-2.5 font-medium leading-relaxed">
-                    <li>This identity card remains the property of Khabar24Times.</li>
-                    <li>Holders are authorized to query details on behalf of the CMS.</li>
-                    <li>Scan front QR code to verify active credentials online.</li>
-                    <li>If found, please return to office address immediately.</li>
-                  </ul>
+              <div className="absolute inset-0 backface-hidden rotate-y-180 bg-[#f8fafe] text-slate-800 rounded-2xl overflow-hidden shadow-inner select-none flex flex-col">
+                {/* Teal Top Bar */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#008080]" />
+                <div className="absolute top-0 left-0 right-0 h-2.5 bg-[#0f193c] flex justify-between items-center px-2 z-10">
+                  <span className="text-[3.5px] text-[#c8d2e1]">info@khabar24times.in</span>
+                  <span className="text-[3.5px] font-bold text-[#daa520]">www.khabar24times.in</span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-850 text-[5.5px]">
-                  <div>
-                    <span className="text-yellow-500 font-bold block">EMERGENCY CONTACT</span>
-                    <span className="text-slate-300">
-                      {formData.emergencyContact || "Contact Name"}
-                    </span>
-                    <span className="text-slate-300 block font-mono font-bold">
-                      +91 {formData.emergencyPhone || "Phone"}
-                    </span>
+                <div className="flex-1 p-3 pt-4 relative">
+                  {/* Top Header & QR */}
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="text-[6px] font-bold text-[#008080]">IDENTITY VERIFICATION</h4>
+                      <p className="text-[10px] font-black text-[#0f193c]">Terms & Conditions</p>
+                      <p className="text-[5px] text-[#5a6478] max-w-[150px] leading-tight mt-1">
+                        Scan the secure QR code to verify this card from the official website.
+                      </p>
+                    </div>
+                    {/* QR Code Box */}
+                    <div className="text-center">
+                      <div className="bg-white p-1 border border-slate-200 shadow-sm rounded-md w-[45px] h-[45px] flex items-center justify-center">
+                        <div className="w-full h-full bg-slate-100 flex items-center justify-center text-[5px] text-slate-400 font-bold border border-dashed border-slate-300">QR</div>
+                      </div>
+                      <p className="text-[4px] font-bold text-[#008080] mt-0.5 tracking-wider">SCAN TO VERIFY</p>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-yellow-500 font-bold block">HEADQUARTERS</span>
-                    <p className="text-slate-400 leading-snug line-clamp-2">
-                      {formData.officeAddress}
+
+                  {/* Verification Status Box */}
+                  <div className="bg-[#f0fff5] border border-[#28c850] rounded px-2 py-1 flex justify-between items-center mt-2">
+                    <div>
+                      <p className="text-[#14963c] font-bold text-[6px]">CARD VERIFICATION PASSED</p>
+                      <p className="text-[#468c5a] text-[4.5px]">Active press identity credential</p>
+                    </div>
+                    <div className="bg-[#28c850] text-white px-2 py-0.5 rounded-full text-[5px] font-bold">
+                      ACTIVE
+                    </div>
+                  </div>
+
+                  {/* Usage Guidelines */}
+                  <div className="mt-2">
+                    <p className="text-[5.5px] font-bold text-[#323c5a] mb-0.5">USAGE GUIDELINES</p>
+                    <ul className="space-y-0.5">
+                      {[
+                        "This identity card remains the property of Khabar24Times.",
+                        "The card holder must carry it during authorised reporting or official media duty.",
+                        "Unauthorised use, copying, alteration or transfer of this card is prohibited.",
+                        "If found, please return it to the issuing organisation or contact its official office."
+                      ].map((item, i) => (
+                        <li key={i} className="flex gap-1 items-start text-[4.5px] text-[#3c465f] leading-tight">
+                          <div className="w-0.5 h-0.5 bg-[#008080] mt-0.5 shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Important Notice */}
+                  <div className="absolute bottom-4 left-3 right-3 bg-[#fffceb] border border-[#daa520] rounded px-2 py-1">
+                    <p className="text-[#8c6400] font-bold text-[5px]">IMPORTANT NOTICE</p>
+                    <p className="text-[#645014] text-[4px] leading-tight mt-0.5">
+                      A premier news publishing agency committed to delivering verified news.
                     </p>
                   </div>
-                </div>
-
-                <div className="flex justify-between items-center text-[5.5px] text-slate-500 border-t border-slate-850/60 pt-1 mt-1">
-                  <span className="font-bold text-yellow-500">www.khabar24times.in</span>
-                  <span>BACK SIDE</span>
                 </div>
               </div>
             </div>
