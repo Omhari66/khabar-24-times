@@ -35,6 +35,7 @@ export default function ReporterGeneratePage() {
     aadhaarLast4: "",
     emergencyContact: "",
     emergencyPhone: "",
+    reporterId: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -81,6 +82,7 @@ export default function ReporterGeneratePage() {
           aadhaarLast4: data.aadhaarLast4,
           emergencyContact: data.emergencyContact,
           emergencyPhone: data.emergencyPhone,
+          reporterId: data.reporterId,
         });
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : "Failed to load reporter profile";
