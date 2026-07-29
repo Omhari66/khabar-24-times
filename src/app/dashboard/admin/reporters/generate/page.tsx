@@ -24,7 +24,7 @@ export default function ReporterGeneratePage() {
     photo: "",
     email: "",
     phone: "",
-    bloodGroup: "O+",
+    bloodGroup: "",
     designation: "",
     department: "",
     state: "Delhi",
@@ -435,13 +435,14 @@ export default function ReporterGeneratePage() {
             {/* Blood Group */}
             <div className="space-y-1">
               <label className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                Blood Group
+                Blood Group <span className="text-slate-500 normal-case font-normal">(optional)</span>
               </label>
               <select
                 value={formData.bloodGroup}
                 onChange={(e) => setFormData((p) => ({ ...p, bloodGroup: e.target.value }))}
                 className="w-full bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 p-2.5 rounded-xl text-xs outline-none focus:ring-1 focus:ring-blue-500"
               >
+                <option value="">— Select (optional) —</option>
                 <option value="A+">A+</option>
                 <option value="A-">A-</option>
                 <option value="B+">B+</option>

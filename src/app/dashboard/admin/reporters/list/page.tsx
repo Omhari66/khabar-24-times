@@ -254,6 +254,7 @@ export default function ReportersListPage() {
           ...reporter,
           joiningDate: new Date(reporter.joiningDate),
           validTill: new Date(reporter.validTill),
+          dateOfBirth: reporter.dateOfBirth ? new Date(reporter.dateOfBirth) : null,
         },
         siteUrl
       );

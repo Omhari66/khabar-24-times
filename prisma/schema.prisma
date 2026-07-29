@@ -513,7 +513,7 @@ model Reporter {
   photo            String             // Cloudinary secure URL
   email            String             @unique
   phone            String             @unique
-  bloodGroup       String
+  bloodGroup       String?
   designation      String
   department       String
   state            String

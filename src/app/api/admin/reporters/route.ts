@@ -10,7 +10,7 @@ const createReporterSchema = z.object({
   photo: requiredTrimmedString("Photo URL is required"),
   email: z.string().email("Invalid email address").toLowerCase(),
   phone: requiredTrimmedString("Phone number is required"),
-  bloodGroup: requiredTrimmedString("Blood group is required"),
+  bloodGroup: z.string().optional().nullable(),
   designation: requiredTrimmedString("Designation is required"),
   department: requiredTrimmedString("Department is required"),
   state: requiredTrimmedString("State is required"),
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     }
 
     const body = await parseJsonBody(req, createReporterSchema);
-    const reporter = await reporterCardService.createReporter(body, session.user.id);
+    const reporter = await reporterCardService.createReporter({ ...body, bloodGroup: body.bloodGroup ?? "" }, session.user.id);
 
     return NextResponse.json(reporter, { status: 201 });
   } catch (error) {
