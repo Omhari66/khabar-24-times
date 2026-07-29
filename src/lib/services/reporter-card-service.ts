@@ -528,7 +528,7 @@ export class ReporterCardService extends ApplicationService {
       escapeCsv(r.phone),
       escapeCsv(r.designation),
       escapeCsv(r.department),
-      escapeCsv(r.bloodGroup),
+      escapeCsv(r.bloodGroup || ""),
       escapeCsv(r.status),
       escapeCsv(r.joiningDate.toISOString().split("T")[0]),
       escapeCsv(r.validTill.toISOString().split("T")[0]),
